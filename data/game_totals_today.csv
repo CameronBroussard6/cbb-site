@@ -1,0 +1,54 @@
+rank,date,game_id,away_team,home_team,market_total,bet,ridge_pred_total,recency_pred_total,from_team_pred_total,xgb_elo_pred_total,ensemble_pred_total,elo_sim_pred_total,brain_score
+1,2026-03-03,401851633,Georgia State Panthers,Louisiana Ragin' Cajuns,132,OVER,142,146.5,152.5,-0.5,144,147,14.9
+2,2026-03-03,401827716,Oklahoma State Cowboys,UCF Knights,169,UNDER,155.5,161,150,-5,158,149,14.7
+3,2026-03-03,401808277,Alabama Crimson Tide,Georgia Bulldogs,180,UNDER,167,185.5,150,16,176.5,153,11.7
+4,2026-03-03,401808274,Mississippi State Bulldogs,Florida Gators,160,UNDER,156,148,160,-1,152,150,11.3
+5,2026-03-03,401827718,West Virginia Mountaineers,Kansas State Wildcats,142.5,UNDER,139.5,130,141.5,-3.5,135,148,10.5
+6,2026-03-03,401827037,Southern Jaguars,Alabama State Hornets,153,UNDER,146,146,147,-11,146,150,10.4
+7,2026-03-03,401820779,Clemson Tigers,North Carolina Tar Heels,142,OVER,143,156,149.5,-3.5,149.5,150,9.8
+8,2026-03-03,401828455,Dayton Flyers,Richmond Spiders,145,OVER,146.5,158,152.5,12.5,152,144.5,9.5
+9,2026-03-03,401827151,Arkansas-Pine Bluff Golden Lions,Jackson State Tigers,153,UNDER,149.5,145,144,13,147,149,9.4
+10,2026-03-03,401812095,Drexel Dragons,Hofstra Pride,134,OVER,139,143,148,-5,141,145,9.3
+11,2026-03-03,401814592,Akron Zips,Central Michigan Chippewas,161,UNDER,149,161.5,152,-4,155.5,150.5,9
+12,2026-03-03,401829692,Mississippi Valley State Delta Devils,Alcorn State Braves,136,OVER,141.5,142,145,-4.5,141.5,146,8.6
+13,2026-03-03,401812176,UMBC Retrievers,NJIT Highlanders,140,OVER,140.5,154,136.5,13.5,147.5,143,8.5
+14,2026-03-03,401808275,Kentucky Wildcats,Texas A&M Aggies,161,UNDER,158,153,154.5,-3.5,155.5,148.5,8.5
+15,2026-03-03,401851541,Army Black Knights,Bucknell Bison,144,OVER,145.5,154,147,-1,150,146,8.3
+16,2026-03-03,401814593,Ball State Cardinals,Western Michigan Broncos,135,OVER,141,138.5,140,-0.5,140,149,7.9
+17,2026-03-03,401812175,Bryant Bulldogs,New Hampshire Wildcats,135,OVER,142,139.5,134.5,-1,141,144.5,7.8
+18,2026-03-03,401814597,Toledo Rockets,Miami (OH) RedHawks,162,UNDER,154,164.5,158.5,2,159.5,152.5,7.7
+19,2026-03-03,401829339,Utah State Aggies,UNLV Rebels,156,UNDER,152.5,151,150,4.5,151.5,149,7.7
+20,2026-03-03,401812098,North Carolina A&T Aggies,Campbell Fighting Camels,156.5,UNDER,148.5,158,145.5,-3,153.5,148.5,7.4
+21,2026-03-03,401808278,Tennessee Volunteers,South Carolina Gamecocks,141,OVER,147,145,132.5,2,146,147.5,7
+22,2026-03-03,401825553,Oregon Ducks,Illinois Fighting Illini,146.5,UNDER,141.5,152.5,145,-1,147,149.5,7
+23,2026-03-03,401812096,Towson Tigers,Stony Brook Seawolves,135,OVER,141.5,129,134.5,-3.5,135.5,145.5,7
+24,2026-03-03,401812097,Hampton Pirates,William & Mary Tribe,154.5,UNDER,150,150.5,155,-4,150.5,147.5,6.9
+25,2026-03-03,401820786,Boston College Eagles,Virginia Tech Hokies,142,OVER,144.5,147.5,143.5,1,146,149,6.6
+26,2026-03-03,401828456,George Mason Patriots,VCU Rams,147.5,UNDER,141.5,149.5,139,-1,145.5,149.5,6.1
+27,2026-03-03,401851635,UL Monroe Warhawks,Old Dominion Monarchs,157.5,UNDER,157,152.5,141,-2.5,154.5,146.5,6.1
+28,2026-03-03,401827717,BYU Cougars,Cincinnati Bearcats,152,UNDER,149,150,146,-3.5,149.5,147.5,5.9
+29,2026-03-03,401820575,Grand Canyon Lopes,Air Force Falcons,142,OVER,147,143,131.5,-8,145,145,5.5
+30,2026-03-03,401814594,Eastern Michigan Eagles,Buffalo Bulls,145,OVER,148.5,140,146.5,0.5,144,149.5,5.4
+31,2026-03-03,401827720,Colorado Buffaloes,Utah Utes,146,UNDER,143.5,145.5,139.5,-4.5,144.5,148,5.2
+32,2026-03-03,401827715,Kansas Jayhawks,Arizona State Sun Devils,151,UNDER,146.5,158.5,140.5,4.5,152.5,147.5,5.1
+33,2026-03-03,401814595,Kent State Golden Flashes,Northern Illinois Huskies,149,UNDER,145.5,151.5,141.5,3.5,148.5,147.5,5.1
+34,2026-03-03,401820785,Wake Forest Demon Deacons,Virginia Cavaliers,148,OVER,149.5,153,142,2,151.5,151.5,5
+35,2026-03-03,401822967,Georgetown Hoyas,St. John's Red Storm,148.5,UNDER,142,155.5,158,-1,148.5,149,5
+36,2026-03-03,401851430,Purdue Fort Wayne Mastodons,Green Bay Phoenix,144.5,OVER,148,140,151.5,-9.5,144,147.5,5
+37,2026-03-03,401812094,Monmouth Hawks,Northeastern Huskies,151,UNDER,150,149,140,-7.5,149.5,146,4.9
+38,2026-03-03,401820781,Syracuse Orange,Louisville Cardinals,158,UNDER,157,157.5,152,-7,157.5,146.5,4.3
+39,2026-03-03,401812174,UAlbany Great Danes,Vermont Catamounts,139.5,UNDER,135.5,142,143,1,138.5,147.5,4.2
+40,2026-03-03,401812177,UMass Lowell River Hawks,Maine Black Bears,140,UNDER,136.5,147,137.5,-15,141.5,146.5,4.1
+41,2026-03-03,401822968,Seton Hall Pirates,Xavier Musketeers,144.5,OVER,146.5,138.5,142,11,142.5,147,4.1
+42,2026-03-03,401808280,Missouri Tigers,Oklahoma Sooners,155,OVER,155.5,158.5,148.5,14,157,147,3.9
+43,2026-03-03,401812099,UNC Wilmington Seahawks,Elon Phoenix,146,UNDER,146,143.5,147,3.5,144.5,148.5,3.6
+44,2026-03-03,401823786,San Diego State Aztecs,Boise State Broncos,144,UNDER,142.5,155,137.5,-3.5,148.5,147,3.4
+45,2026-03-03,401828936,San José State Spartans,Fresno State Bulldogs,148,OVER,151.5,138.5,131,-7.5,145,146,3
+46,2026-03-03,401825554,Nebraska Cornhuskers,UCLA Bruins,143,UNDER,142,151.5,139.5,-4.5,146.5,151,2.9
+47,2026-03-03,401814596,Ohio Bobcats,Massachusetts Minutemen,156,UNDER,156,164,145.5,-8,160,148,2.7
+48,2026-03-03,401827105,Grambling Tigers,Alabama A&M Bulldogs,139,OVER,139,134.5,135,-0.5,137,146.5,2.3
+49,2026-03-03,401851542,Holy Cross Crusaders,Lafayette Leopards,142,UNDER,141,149,143.5,-1,145,146.5,1.8
+50,2026-03-03,401829322,Nevada Wolf Pack,Wyoming Cowboys,144,UNDER,143.5,152.5,152.5,14,148,145.5,1.6
+51,2026-03-03,401827719,TCU Horned Frogs,Texas Tech Red Raiders,147,OVER,148,146.5,144.5,-1,147.5,148,1.4
+52,2026-03-03,401808276,LSU Tigers,Auburn Tigers,155,OVER,156.5,155,153.5,-9.5,156,149,1.2
+53,2026-03-03,401808279,Vanderbilt Commodores,Ole Miss Rebels,155,OVER,155.5,148.5,152.5,3.5,152,149,0.9
