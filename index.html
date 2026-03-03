@@ -1,142 +1,778 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CBB Picks — 2026-03-03</title>
-  
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>CTB Analytics — College Basketball Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --border: #30363d;
-    --text: #c9d1d9;
-    --accent: #58a6ff;
-    --green: #3fb950;
-    --yellow: #d29922;
-    --red: #f85149;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  header h1 { font-size: 20px; color: var(--accent); }
-  header .run-date { font-size: 12px; color: #6e7681; }
-  nav { display: flex; gap: 16px; }
-  nav a { color: var(--accent); text-decoration: none; font-size: 13px; }
-  nav a:hover { text-decoration: underline; }
-  main { max-width: 1400px; margin: 0 auto; padding: 24px; }
-  h2 { font-size: 16px; color: var(--accent); margin: 24px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-  .picks-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .picks-table th {
-    background: var(--surface);
-    color: #8b949e;
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  .picks-table td {
-    padding: 7px 10px;
-    border-bottom: 1px solid #21262d;
-    vertical-align: middle;
-  }
-  .picks-table tr:hover td { background: #1c2128; }
-  .stats-banner {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-  }
-  .stat-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px 18px;
-    min-width: 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .stat-label { font-size: 11px; color: #6e7681; text-transform: uppercase; letter-spacing: .5px; }
-  .stat-value { font-size: 18px; font-weight: 600; color: var(--green); }
-  .section-wrap { overflow-x: auto; margin-bottom: 32px; }
-  .dl-links { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
-  .dl-links a {
-    font-size: 12px;
-    color: var(--accent);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 3px 8px;
-    text-decoration: none;
-  }
-  .dl-links a:hover { background: var(--surface); }
-  footer {
-    text-align: center;
-    padding: 24px;
-    font-size: 12px;
-    color: #6e7681;
-    border-top: 1px solid var(--border);
-    margin-top: 32px;
-  }
-  @media (max-width: 700px) {
-    header { flex-direction: column; gap: 8px; }
-  }
-</style>
+:root {
+  --bg:        #0d0f12;
+  --surface:   #161920;
+  --surface2:  #1e2229;
+  --border:    #2a2f38;
+  --text:      #e8eaf0;
+  --muted:     #9097a3;
+  --muted2:    #707784;
 
+  /* CBB accent: rose/pink instead of green — visually distinct from NBA */
+  --accent:    #f43f7a;
+  --accent-d:  #4a1128;
+  --accent-bg: #2a1120;
+
+  /* Blue for card borders / over badge — kept from old CBB */
+  --blue:      #3b82f6;
+  --blue-d:    #1e3a5f;
+  --blue-bg:   #0f1e35;
+
+  --warn:      #f59e0b;
+  --danger:    #ef4444;
+  --gold:      #d4af37;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --r:         8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* ── HEADER ── */
+header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.header-copy { min-width: 0; flex: 1 1 auto; }
+.brand {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+.site-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+.site-date {
+  font-size: 12px;
+  font-style: italic;
+  color: #ffffff;
+  margin-top: 4px;
+}
+#updated {
+  font-size: 10px;
+  font-style: normal;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.header-logo {
+  flex: 0 0 auto;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── RECORD TRACKERS ── */
+.records {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.rec {
+  padding: 12px 16px;
+  border-right: 1px solid var(--border);
+  /* Blue left-accent stripe — CBB visual identity */
+  border-left: 2px solid var(--blue);
+}
+.rec:first-child { border-left: 2px solid var(--blue); }
+.rec:last-child { border-right: none; }
+.rec-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 4px;
+}
+.rec-val {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+.rec-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted2);
+  margin-top: 3px;
+}
+.rec-sub2 {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted2);
+  margin-top: 1px;
+}
+
+/* ── TABS ── */
+.tabs-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 12px 10px;
+}
+.tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 10px 14px;
+  min-width: 120px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.15s ease;
+  user-select: none;
+  text-align: center;
+}
+.tab:hover { color: var(--text); border-color: #3a404b; }
+/* Rose/pink active — immediately different from NBA green */
+.tab.active {
+  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: inset 0 0 0 1px rgba(244,63,122,0.15);
+}
+.tab-ct {
+  display: inline-block;
+  min-width: 22px;
+  margin-left: 7px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #2b313b;
+  color: #c9d0db;
+  font-size: 10px;
+  font-family: var(--mono);
+  vertical-align: middle;
+}
+.tab.active .tab-ct {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── MAIN / PANELS ── */
+main { padding: 14px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── BET BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 5px 8px 5px 7px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  line-height: 1.05;
+  white-space: nowrap;
+}
+.b-over {
+  background: var(--blue-bg);
+  color: #93c5fd;
+  border: 1px solid #1d4ed8;
+}
+.b-under {
+  background: #1a0a0a;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+}
+.b-home {
+  background: var(--accent-bg);
+  color: #fda4c0;
+  border: 1px solid #831843;
+}
+.b-away {
+  background: #1a1500;
+  color: #fde68a;
+  border: 1px solid #78350f;
+}
+.b-pass {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.badge-arrow { font-size: 13px; font-weight: 700; line-height: 1; padding-top: 1px; }
+.badge-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.badge-main { font-size: 10px; font-weight: 700; letter-spacing: 0.02em; }
+.badge-sub  { font-size: 8px; opacity: 0.85; line-height: 1; }
+
+/* ── SCORE STYLES ── */
+.es { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.ep { color: var(--blue); }
+.en { color: #f87171; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+.empty .icon { font-size: 28px; margin-bottom: 10px; }
+
+/* ═══════════════════════════════════════════════════
+   CBB GAME CARDS — compact, mobile-first
+   Each card = one game's pick
+═══════════════════════════════════════════════════ */
+.game-cards { display: flex; flex-direction: column; gap: 10px; }
+
+.game-card {
+  background: var(--surface);
+  /* Blue left border — CBB visual signature */
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+/* Top strip: matchup + badge */
+.gc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.gc-matchup { min-width: 0; flex: 1; }
+.gc-rank {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted2);
+  margin-bottom: 2px;
+}
+.gc-teams {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gc-teams .away { color: var(--muted); font-weight: 500; }
+.gc-teams .vs   { color: var(--muted2); font-size: 10px; margin: 0 4px; }
+
+/* Body: 4-column stat grid */
+.gc-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0;
+}
+.gc-cell {
+  padding: 8px 10px;
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+.gc-cell:last-child { border-right: none; }
+.gc-cell-label {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+.gc-cell-value {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+.gc-cell-value.dim { color: var(--muted); font-size: 11px; }
+
+/* AG score color bar */
+.ag-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.ag-bar-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  flex: 1;
+  overflow: hidden;
+}
+.ag-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f43f7a, #fb923c);
+}
+
+/* Edge score coloring — same logic as NBA */
+.es-high  { color: hsl(260, 85%, 72%); font-weight: 700; }
+.es-med   { color: hsl(240, 85%, 70%); font-weight: 600; }
+.es-low   { color: var(--muted); font-weight: 500; }
+
+/* Model preds row — small secondary line under market */
+.gc-pred {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.gc-pred span { color: var(--text); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  header { padding: 14px 14px 12px; }
+  .header-logo { width: 88px; height: 88px; }
+  .site-title { font-size: 18px; }
+  main { padding: 10px; }
+  .records { grid-template-columns: repeat(3, 1fr); }
+  .rec { padding: 10px 8px; }
+  .rec-val { font-size: 15px; }
+  .tab { min-width: 100px; padding: 9px 10px; font-size: 12px; }
+  .gc-body { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .gc-cell { padding: 7px 8px; }
+  .gc-cell-value { font-size: 11px; }
+}
+
+@media (max-width: 400px) {
+  .gc-body { grid-template-columns: 1fr 1fr; }
+  .gc-cell:nth-child(2) { border-right: none; }
+  .gc-cell:nth-child(4) { border-right: none; }
+  .gc-cell:nth-child(3),
+  .gc-cell:nth-child(4) { border-top: 1px solid var(--border); }
+}
+</style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>🏀 CBB Daily Picks</h1>
-      <div class="run-date">Updated: 2026-03-03 · Auto-generated by pipeline</div>
-    </div>
-    <nav>
-      <a href="index.html">Today</a>
-      <a href="history.html">History &amp; Stats</a>
-    </nav>
-  </header>
-  <main>
-    <div class="stats-banner"><div class="stat-box"><span class="stat-label">Game Totals (all-time)</span><span class="stat-value">No data</span></div><div class="stat-box"><span class="stat-label">Spreads (all-time)</span><span class="stat-value">No data</span></div></div>
 
-    <h2>📊 Spreads — Top Picks by Brain Score</h2>
-    <div class="dl-links">
-      <a href="data/spreads_today.csv">⬇ Download CSV</a>
+<header>
+  <div class="header-top">
+    <div class="header-copy">
+      <div class="brand">CTB Analytics</div>
+      <div class="site-title">College Basketball Sheet</div>
+      <div class="site-date" id="run-date">—</div>
+      <div id="updated">Last Run: —</div>
     </div>
-    <div class="section-wrap">
-    <table class="picks-table" id="tbl-spreads"><thead><tr><th>#</th><th>Matchup</th><th>Market Spread</th><th>Pick</th><th>Model Line</th><th>Edge Pts</th><th>Brain Score</th></tr></thead><tbody><tr><td> 1</td><td>Georgia State Panthers @ Louisiana Ragin' Cajuns</td><td>Louisiana Ragin' Cajuns +1</td><td>Louisiana Ragin' Cajuns +1</td><td>Louisiana Ragin' Cajuns -13</td><td>14.0</td><td>18.6</td></tr><tr><td> 2</td><td>Syracuse Orange @ Louisville Cardinals</td><td>Louisville Cardinals -12.5</td><td>Louisville Cardinals -12.5</td><td>Louisville Cardinals -25</td><td>12.5</td><td>17.5</td></tr><tr><td> 3</td><td>Oklahoma State Cowboys @ UCF Knights</td><td>UCF Knights -9.5</td><td>UCF Knights -9.5</td><td>UCF Knights -22</td><td>12.5</td><td>17.2</td></tr><tr><td> 4</td><td>UNC Wilmington Seahawks @ Elon Phoenix</td><td>Elon Phoenix +4.5</td><td>UNC Wilmington Seahawks -4.5</td><td>UNC Wilmington Seahawks -16</td><td>11.5</td><td>16.3</td></tr><tr><td> 5</td><td>BYU Cougars @ Cincinnati Bearcats</td><td>Cincinnati Bearcats -2</td><td>Cincinnati Bearcats -2</td><td>Cincinnati Bearcats -12.5</td><td>10.0</td><td>15.0</td></tr><tr><td> 6</td><td>George Mason Patriots @ VCU Rams</td><td>VCU Rams -10.5</td><td>VCU Rams -10.5</td><td>VCU Rams -22.5</td><td>12.0</td><td>14.8</td></tr><tr><td> 7</td><td>LSU Tigers @ Auburn Tigers</td><td>Auburn Tigers -9.5</td><td>LSU Tigers +9.5</td><td>LSU Tigers 0</td><td> 9.5</td><td>14.4</td></tr><tr><td> 8</td><td>Monmouth Hawks @ Northeastern Huskies</td><td>Northeastern Huskies +4.5</td><td>Monmouth Hawks -4.5</td><td>Monmouth Hawks -13.5</td><td> 9.0</td><td>13.7</td></tr><tr><td> 9</td><td>Clemson Tigers @ North Carolina Tar Heels</td><td>North Carolina Tar Heels -3.5</td><td>North Carolina Tar Heels -3.5</td><td>North Carolina Tar Heels -12</td><td> 8.5</td><td>13.5</td></tr><tr><td>10</td><td>Vanderbilt Commodores @ Ole Miss Rebels</td><td>Ole Miss Rebels +6.5</td><td>Vanderbilt Commodores -6.5</td><td>Vanderbilt Commodores -14.5</td><td> 8.0</td><td>13.0</td></tr><tr><td>11</td><td>Nevada Wolf Pack @ Wyoming Cowboys</td><td>Wyoming Cowboys 0</td><td>Wyoming Cowboys 0</td><td>Wyoming Cowboys -8</td><td> 8.0</td><td>13.0</td></tr><tr><td>12</td><td>Akron Zips @ Central Michigan Chippewas</td><td>Central Michigan Chippewas +11.5</td><td>Central Michigan Chippewas +11.5</td><td>Akron Zips -3.5</td><td> 8.0</td><td>12.8</td></tr><tr><td>13</td><td>Boston College Eagles @ Virginia Tech Hokies</td><td>Virginia Tech Hokies -11.5</td><td>Virginia Tech Hokies -11.5</td><td>Virginia Tech Hokies -19</td><td> 7.5</td><td>12.2</td></tr><tr><td>14</td><td>Purdue Fort Wayne Mastodons @ Green Bay Phoenix</td><td>Green Bay Phoenix -4</td><td>Green Bay Phoenix -4</td><td>Green Bay Phoenix -11</td><td> 7.0</td><td>12.0</td></tr><tr><td>15</td><td>Alabama Crimson Tide @ Georgia Bulldogs</td><td>Georgia Bulldogs +1</td><td>Alabama Crimson Tide -1</td><td>Alabama Crimson Tide -7.5</td><td> 6.5</td><td>11.6</td></tr><tr><td>16</td><td>Mississippi Valley State Delta Devils @ Alcorn State Braves</td><td>Alcorn State Braves -9.5</td><td>Alcorn State Braves -9.5</td><td>Alcorn State Braves -16</td><td> 6.5</td><td>11.4</td></tr><tr><td>17</td><td>Arkansas-Pine Bluff Golden Lions @ Jackson State Tigers</td><td>Jackson State Tigers -1</td><td>Jackson State Tigers -1</td><td>Jackson State Tigers -7.5</td><td> 6.5</td><td>11.3</td></tr><tr><td>18</td><td>Hampton Pirates @ William & Mary Tribe</td><td>William & Mary Tribe -11.5</td><td>William & Mary Tribe -11.5</td><td>William & Mary Tribe -17.5</td><td> 6.0</td><td>10.9</td></tr><tr><td>19</td><td>Nebraska Cornhuskers @ UCLA Bruins</td><td>UCLA Bruins -1</td><td>Nebraska Cornhuskers +1</td><td>Nebraska Cornhuskers -5</td><td> 6.0</td><td>10.6</td></tr><tr><td>20</td><td>Ball State Cardinals @ Western Michigan Broncos</td><td>Western Michigan Broncos -3</td><td>Western Michigan Broncos -3</td><td>Western Michigan Broncos -8.5</td><td> 5.5</td><td>10.6</td></tr><tr><td>21</td><td>Utah State Aggies @ UNLV Rebels</td><td>UNLV Rebels +7.5</td><td>UNLV Rebels +7.5</td><td>Utah State Aggies -2</td><td> 5.5</td><td>10.5</td></tr><tr><td>22</td><td>Drexel Dragons @ Hofstra Pride</td><td>Hofstra Pride -8.5</td><td>Hofstra Pride -8.5</td><td>Hofstra Pride -16.5</td><td> 8.0</td><td>10.0</td></tr><tr><td>23</td><td>Holy Cross Crusaders @ Lafayette Leopards</td><td>Lafayette Leopards -4.5</td><td>Holy Cross Crusaders +4.5</td><td>Holy Cross Crusaders -0.5</td><td> 5.0</td><td> 9.7</td></tr><tr><td>24</td><td>Grand Canyon Lopes @ Air Force Falcons</td><td>Air Force Falcons +20.5</td><td>Grand Canyon Lopes -20.5</td><td>Grand Canyon Lopes -26.5</td><td> 6.0</td><td> 9.7</td></tr><tr><td>25</td><td>Wake Forest Demon Deacons @ Virginia Cavaliers</td><td>Virginia Cavaliers -14.5</td><td>Virginia Cavaliers -14.5</td><td>Virginia Cavaliers -21.5</td><td> 7.0</td><td> 9.6</td></tr><tr><td>26</td><td>Bryant Bulldogs @ New Hampshire Wildcats</td><td>New Hampshire Wildcats -1.5</td><td>New Hampshire Wildcats -1.5</td><td>New Hampshire Wildcats -6</td><td> 4.5</td><td> 9.5</td></tr><tr><td>27</td><td>San Diego State Aztecs @ Boise State Broncos</td><td>Boise State Broncos -1.5</td><td>San Diego State Aztecs +1.5</td><td>San Diego State Aztecs -2.5</td><td> 4.0</td><td> 8.8</td></tr><tr><td>28</td><td>Oregon Ducks @ Illinois Fighting Illini</td><td>Illinois Fighting Illini -18</td><td>Illinois Fighting Illini -18</td><td>Illinois Fighting Illini -24</td><td> 6.0</td><td> 8.6</td></tr><tr><td>29</td><td>Kansas Jayhawks @ Arizona State Sun Devils</td><td>Arizona State Sun Devils +6</td><td>Arizona State Sun Devils +6</td><td>Kansas Jayhawks -3</td><td> 3.5</td><td> 8.3</td></tr><tr><td>30</td><td>Toledo Rockets @ Miami (OH) RedHawks</td><td>Miami (OH) RedHawks -8</td><td>Miami (OH) RedHawks -8</td><td>Miami (OH) RedHawks -11.5</td><td> 3.5</td><td> 8.2</td></tr><tr><td>31</td><td>TCU Horned Frogs @ Texas Tech Red Raiders</td><td>Texas Tech Red Raiders -8.5</td><td>Texas Tech Red Raiders -8.5</td><td>Texas Tech Red Raiders -14</td><td> 5.5</td><td> 7.9</td></tr><tr><td>32</td><td>Seton Hall Pirates @ Xavier Musketeers</td><td>Xavier Musketeers +1.5</td><td>Xavier Musketeers +1.5</td><td>Xavier Musketeers -1.5</td><td> 3.0</td><td> 7.8</td></tr><tr><td>33</td><td>UAlbany Great Danes @ Vermont Catamounts</td><td>Vermont Catamounts -8.5</td><td>Vermont Catamounts -8.5</td><td>Vermont Catamounts -11.5</td><td> 3.0</td><td> 7.8</td></tr><tr><td>34</td><td>Kentucky Wildcats @ Texas A&M Aggies</td><td>Texas A&M Aggies -1.5</td><td>Kentucky Wildcats +1.5</td><td>Kentucky Wildcats -1.5</td><td> 3.0</td><td> 7.8</td></tr><tr><td>35</td><td>Towson Tigers @ Stony Brook Seawolves</td><td>Stony Brook Seawolves +0.5</td><td>Stony Brook Seawolves +0.5</td><td>Stony Brook Seawolves -2.5</td><td> 3.0</td><td> 7.6</td></tr><tr><td>36</td><td>UMBC Retrievers @ NJIT Highlanders</td><td>NJIT Highlanders +5</td><td>UMBC Retrievers -5</td><td>UMBC Retrievers -9.5</td><td> 4.5</td><td> 7.5</td></tr><tr><td>37</td><td>Army Black Knights @ Bucknell Bison</td><td>Bucknell Bison -3</td><td>Army Black Knights +3</td><td>Bucknell Bison -0.5</td><td> 2.5</td><td> 7.3</td></tr><tr><td>38</td><td>Eastern Michigan Eagles @ Buffalo Bulls</td><td>Buffalo Bulls -3.5</td><td>Buffalo Bulls -3.5</td><td>Buffalo Bulls -5.5</td><td> 2.0</td><td> 7.0</td></tr><tr><td>39</td><td>North Carolina A&T Aggies @ Campbell Fighting Camels</td><td>Campbell Fighting Camels -7.5</td><td>North Carolina A&T Aggies +7.5</td><td>Campbell Fighting Camels -2.5</td><td> 5.0</td><td> 6.8</td></tr><tr><td>40</td><td>Grambling Tigers @ Alabama A&M Bulldogs</td><td>Alabama A&M Bulldogs -2.5</td><td>Alabama A&M Bulldogs -2.5</td><td>Alabama A&M Bulldogs -4.5</td><td> 2.0</td><td> 6.8</td></tr><tr><td>41</td><td>Dayton Flyers @ Richmond Spiders</td><td>Richmond Spiders +5.5</td><td>Dayton Flyers -5.5</td><td>Dayton Flyers -9</td><td> 3.5</td><td> 6.6</td></tr><tr><td>42</td><td>UL Monroe Warhawks @ Old Dominion Monarchs</td><td>Old Dominion Monarchs -11</td><td>Old Dominion Monarchs -11</td><td>Old Dominion Monarchs -15</td><td> 4.0</td><td> 6.6</td></tr><tr><td>43</td><td>San José State Spartans @ Fresno State Bulldogs</td><td>Fresno State Bulldogs -6.5</td><td>Fresno State Bulldogs -6.5</td><td>Fresno State Bulldogs -8</td><td> 1.5</td><td> 6.3</td></tr><tr><td>44</td><td>Ohio Bobcats @ Massachusetts Minutemen</td><td>Massachusetts Minutemen -2</td><td>Massachusetts Minutemen -2</td><td>Massachusetts Minutemen -4.5</td><td> 2.5</td><td> 6.0</td></tr><tr><td>45</td><td>Kent State Golden Flashes @ Northern Illinois Huskies</td><td>Northern Illinois Huskies +10.5</td><td>Northern Illinois Huskies +10.5</td><td>Kent State Golden Flashes -9.5</td><td> 1.0</td><td> 5.7</td></tr><tr><td>46</td><td>Tennessee Volunteers @ South Carolina Gamecocks</td><td>South Carolina Gamecocks +8.5</td><td>Tennessee Volunteers -8.5</td><td>Tennessee Volunteers -11</td><td> 2.5</td><td> 5.6</td></tr><tr><td>47</td><td>Mississippi State Bulldogs @ Florida Gators</td><td>Florida Gators -22.5</td><td>Florida Gators -22.5</td><td>Florida Gators -22.5</td><td> 0.0</td><td> 3.9</td></tr><tr><td>48</td><td>UMass Lowell River Hawks @ Maine Black Bears</td><td>Maine Black Bears +1.5</td><td>Maine Black Bears +1.5</td><td>UMass Lowell River Hawks -0.5</td><td> 1.0</td><td> 3.9</td></tr><tr><td>49</td><td>Missouri Tigers @ Oklahoma Sooners</td><td>Oklahoma Sooners -2</td><td>Missouri Tigers +2</td><td>Oklahoma Sooners -2</td><td> 0.5</td><td> 3.9</td></tr><tr><td>50</td><td>Southern Jaguars @ Alabama State Hornets</td><td>Alabama State Hornets -2.5</td><td>Alabama State Hornets -2.5</td><td>Alabama State Hornets -3.5</td><td> 1.0</td><td> 3.9</td></tr><tr><td>51</td><td>West Virginia Mountaineers @ Kansas State Wildcats</td><td>Kansas State Wildcats +2.5</td><td>West Virginia Mountaineers -2.5</td><td>West Virginia Mountaineers -4</td><td> 1.5</td><td> 3.2</td></tr><tr><td>52</td><td>Colorado Buffaloes @ Utah Utes</td><td>Utah Utes +1.5</td><td>Utah Utes +1.5</td><td>Colorado Buffaloes -1</td><td> 0.5</td><td> 2.9</td></tr><tr><td>53</td><td>Georgetown Hoyas @ St. John's Red Storm</td><td>St. John's Red Storm -16.5</td><td>Georgetown Hoyas +16.5</td><td>St. John's Red Storm -16.5</td><td> 0.0</td><td> 2.5</td></tr></tbody></table>
+    <div class="header-logo">
+      <img src="assets/ctb-logo.png" alt="CTB Analytics Logo">
     </div>
+  </div>
+</header>
 
-    <h2>🎯 Game Totals — Top Picks by Brain Score</h2>
-    <div class="dl-links">
-      <a href="data/game_totals_today.csv">⬇ Download CSV</a>
-    </div>
-    <div class="section-wrap">
-    <table class="picks-table" id="tbl-game-totals"><thead><tr><th>#</th><th>Matchup</th><th>Market O/U</th><th>Bet</th><th>Ridge</th><th>Recency</th><th>Ensemble</th><th>Brain Score</th></tr></thead><tbody><tr><td> 1</td><td>Georgia State Panthers @ Louisiana Ragin' Cajuns</td><td>132.0</td><td>OVER</td><td>142.0</td><td>146.5</td><td>144.0</td><td>14.9</td></tr><tr><td> 2</td><td>Oklahoma State Cowboys @ UCF Knights</td><td>169.0</td><td>UNDER</td><td>155.5</td><td>161.0</td><td>158.0</td><td>14.7</td></tr><tr><td> 3</td><td>Alabama Crimson Tide @ Georgia Bulldogs</td><td>180.0</td><td>UNDER</td><td>167.0</td><td>185.5</td><td>176.5</td><td>11.7</td></tr><tr><td> 4</td><td>Mississippi State Bulldogs @ Florida Gators</td><td>160.0</td><td>UNDER</td><td>156.0</td><td>148.0</td><td>152.0</td><td>11.3</td></tr><tr><td> 5</td><td>West Virginia Mountaineers @ Kansas State Wildcats</td><td>142.5</td><td>UNDER</td><td>139.5</td><td>130.0</td><td>135.0</td><td>10.5</td></tr><tr><td> 6</td><td>Southern Jaguars @ Alabama State Hornets</td><td>153.0</td><td>UNDER</td><td>146.0</td><td>146.0</td><td>146.0</td><td>10.4</td></tr><tr><td> 7</td><td>Clemson Tigers @ North Carolina Tar Heels</td><td>142.0</td><td>OVER</td><td>143.0</td><td>156.0</td><td>149.5</td><td> 9.8</td></tr><tr><td> 8</td><td>Dayton Flyers @ Richmond Spiders</td><td>145.0</td><td>OVER</td><td>146.5</td><td>158.0</td><td>152.0</td><td> 9.5</td></tr><tr><td> 9</td><td>Arkansas-Pine Bluff Golden Lions @ Jackson State Tigers</td><td>153.0</td><td>UNDER</td><td>149.5</td><td>145.0</td><td>147.0</td><td> 9.4</td></tr><tr><td>10</td><td>Drexel Dragons @ Hofstra Pride</td><td>134.0</td><td>OVER</td><td>139.0</td><td>143.0</td><td>141.0</td><td> 9.3</td></tr><tr><td>11</td><td>Akron Zips @ Central Michigan Chippewas</td><td>161.0</td><td>UNDER</td><td>149.0</td><td>161.5</td><td>155.5</td><td> 9.0</td></tr><tr><td>12</td><td>Mississippi Valley State Delta Devils @ Alcorn State Braves</td><td>136.0</td><td>OVER</td><td>141.5</td><td>142.0</td><td>141.5</td><td> 8.6</td></tr><tr><td>13</td><td>UMBC Retrievers @ NJIT Highlanders</td><td>140.0</td><td>OVER</td><td>140.5</td><td>154.0</td><td>147.5</td><td> 8.5</td></tr><tr><td>14</td><td>Kentucky Wildcats @ Texas A&M Aggies</td><td>161.0</td><td>UNDER</td><td>158.0</td><td>153.0</td><td>155.5</td><td> 8.5</td></tr><tr><td>15</td><td>Army Black Knights @ Bucknell Bison</td><td>144.0</td><td>OVER</td><td>145.5</td><td>154.0</td><td>150.0</td><td> 8.3</td></tr><tr><td>16</td><td>Ball State Cardinals @ Western Michigan Broncos</td><td>135.0</td><td>OVER</td><td>141.0</td><td>138.5</td><td>140.0</td><td> 7.9</td></tr><tr><td>17</td><td>Bryant Bulldogs @ New Hampshire Wildcats</td><td>135.0</td><td>OVER</td><td>142.0</td><td>139.5</td><td>141.0</td><td> 7.8</td></tr><tr><td>18</td><td>Toledo Rockets @ Miami (OH) RedHawks</td><td>162.0</td><td>UNDER</td><td>154.0</td><td>164.5</td><td>159.5</td><td> 7.7</td></tr><tr><td>19</td><td>Utah State Aggies @ UNLV Rebels</td><td>156.0</td><td>UNDER</td><td>152.5</td><td>151.0</td><td>151.5</td><td> 7.7</td></tr><tr><td>20</td><td>North Carolina A&T Aggies @ Campbell Fighting Camels</td><td>156.5</td><td>UNDER</td><td>148.5</td><td>158.0</td><td>153.5</td><td> 7.4</td></tr><tr><td>21</td><td>Tennessee Volunteers @ South Carolina Gamecocks</td><td>141.0</td><td>OVER</td><td>147.0</td><td>145.0</td><td>146.0</td><td> 7.0</td></tr><tr><td>22</td><td>Oregon Ducks @ Illinois Fighting Illini</td><td>146.5</td><td>UNDER</td><td>141.5</td><td>152.5</td><td>147.0</td><td> 7.0</td></tr><tr><td>23</td><td>Towson Tigers @ Stony Brook Seawolves</td><td>135.0</td><td>OVER</td><td>141.5</td><td>129.0</td><td>135.5</td><td> 7.0</td></tr><tr><td>24</td><td>Hampton Pirates @ William & Mary Tribe</td><td>154.5</td><td>UNDER</td><td>150.0</td><td>150.5</td><td>150.5</td><td> 6.9</td></tr><tr><td>25</td><td>Boston College Eagles @ Virginia Tech Hokies</td><td>142.0</td><td>OVER</td><td>144.5</td><td>147.5</td><td>146.0</td><td> 6.6</td></tr><tr><td>26</td><td>George Mason Patriots @ VCU Rams</td><td>147.5</td><td>UNDER</td><td>141.5</td><td>149.5</td><td>145.5</td><td> 6.1</td></tr><tr><td>27</td><td>UL Monroe Warhawks @ Old Dominion Monarchs</td><td>157.5</td><td>UNDER</td><td>157.0</td><td>152.5</td><td>154.5</td><td> 6.1</td></tr><tr><td>28</td><td>BYU Cougars @ Cincinnati Bearcats</td><td>152.0</td><td>UNDER</td><td>149.0</td><td>150.0</td><td>149.5</td><td> 5.9</td></tr><tr><td>29</td><td>Grand Canyon Lopes @ Air Force Falcons</td><td>142.0</td><td>OVER</td><td>147.0</td><td>143.0</td><td>145.0</td><td> 5.5</td></tr><tr><td>30</td><td>Eastern Michigan Eagles @ Buffalo Bulls</td><td>145.0</td><td>OVER</td><td>148.5</td><td>140.0</td><td>144.0</td><td> 5.4</td></tr><tr><td>31</td><td>Colorado Buffaloes @ Utah Utes</td><td>146.0</td><td>UNDER</td><td>143.5</td><td>145.5</td><td>144.5</td><td> 5.2</td></tr><tr><td>32</td><td>Kansas Jayhawks @ Arizona State Sun Devils</td><td>151.0</td><td>UNDER</td><td>146.5</td><td>158.5</td><td>152.5</td><td> 5.1</td></tr><tr><td>33</td><td>Kent State Golden Flashes @ Northern Illinois Huskies</td><td>149.0</td><td>UNDER</td><td>145.5</td><td>151.5</td><td>148.5</td><td> 5.1</td></tr><tr><td>34</td><td>Wake Forest Demon Deacons @ Virginia Cavaliers</td><td>148.0</td><td>OVER</td><td>149.5</td><td>153.0</td><td>151.5</td><td> 5.0</td></tr><tr><td>35</td><td>Georgetown Hoyas @ St. John's Red Storm</td><td>148.5</td><td>UNDER</td><td>142.0</td><td>155.5</td><td>148.5</td><td> 5.0</td></tr><tr><td>36</td><td>Purdue Fort Wayne Mastodons @ Green Bay Phoenix</td><td>144.5</td><td>OVER</td><td>148.0</td><td>140.0</td><td>144.0</td><td> 5.0</td></tr><tr><td>37</td><td>Monmouth Hawks @ Northeastern Huskies</td><td>151.0</td><td>UNDER</td><td>150.0</td><td>149.0</td><td>149.5</td><td> 4.9</td></tr><tr><td>38</td><td>Syracuse Orange @ Louisville Cardinals</td><td>158.0</td><td>UNDER</td><td>157.0</td><td>157.5</td><td>157.5</td><td> 4.3</td></tr><tr><td>39</td><td>UAlbany Great Danes @ Vermont Catamounts</td><td>139.5</td><td>UNDER</td><td>135.5</td><td>142.0</td><td>138.5</td><td> 4.2</td></tr><tr><td>40</td><td>UMass Lowell River Hawks @ Maine Black Bears</td><td>140.0</td><td>UNDER</td><td>136.5</td><td>147.0</td><td>141.5</td><td> 4.1</td></tr><tr><td>41</td><td>Seton Hall Pirates @ Xavier Musketeers</td><td>144.5</td><td>OVER</td><td>146.5</td><td>138.5</td><td>142.5</td><td> 4.1</td></tr><tr><td>42</td><td>Missouri Tigers @ Oklahoma Sooners</td><td>155.0</td><td>OVER</td><td>155.5</td><td>158.5</td><td>157.0</td><td> 3.9</td></tr><tr><td>43</td><td>UNC Wilmington Seahawks @ Elon Phoenix</td><td>146.0</td><td>UNDER</td><td>146.0</td><td>143.5</td><td>144.5</td><td> 3.6</td></tr><tr><td>44</td><td>San Diego State Aztecs @ Boise State Broncos</td><td>144.0</td><td>UNDER</td><td>142.5</td><td>155.0</td><td>148.5</td><td> 3.4</td></tr><tr><td>45</td><td>San José State Spartans @ Fresno State Bulldogs</td><td>148.0</td><td>OVER</td><td>151.5</td><td>138.5</td><td>145.0</td><td> 3.0</td></tr><tr><td>46</td><td>Nebraska Cornhuskers @ UCLA Bruins</td><td>143.0</td><td>UNDER</td><td>142.0</td><td>151.5</td><td>146.5</td><td> 2.9</td></tr><tr><td>47</td><td>Ohio Bobcats @ Massachusetts Minutemen</td><td>156.0</td><td>UNDER</td><td>156.0</td><td>164.0</td><td>160.0</td><td> 2.7</td></tr><tr><td>48</td><td>Grambling Tigers @ Alabama A&M Bulldogs</td><td>139.0</td><td>OVER</td><td>139.0</td><td>134.5</td><td>137.0</td><td> 2.3</td></tr><tr><td>49</td><td>Holy Cross Crusaders @ Lafayette Leopards</td><td>142.0</td><td>UNDER</td><td>141.0</td><td>149.0</td><td>145.0</td><td> 1.8</td></tr><tr><td>50</td><td>Nevada Wolf Pack @ Wyoming Cowboys</td><td>144.0</td><td>UNDER</td><td>143.5</td><td>152.5</td><td>148.0</td><td> 1.6</td></tr><tr><td>51</td><td>TCU Horned Frogs @ Texas Tech Red Raiders</td><td>147.0</td><td>OVER</td><td>148.0</td><td>146.5</td><td>147.5</td><td> 1.4</td></tr><tr><td>52</td><td>LSU Tigers @ Auburn Tigers</td><td>155.0</td><td>OVER</td><td>156.5</td><td>155.0</td><td>156.0</td><td> 1.2</td></tr><tr><td>53</td><td>Vanderbilt Commodores @ Ole Miss Rebels</td><td>155.0</td><td>OVER</td><td>155.5</td><td>148.5</td><td>152.0</td><td> 0.9</td></tr></tbody></table>
-    </div>
+<!-- Record trackers: Game Totals | Team Totals | Spreads -->
+<div class="records">
+  <div class="rec">
+    <div class="rec-label">Game Totals</div>
+    <div class="rec-val" id="r-gt">—</div>
+    <div class="rec-sub" id="r-gt-pct">—</div>
+    <div class="rec-sub2" id="r-gt-top10">—</div>
+  </div>
+  <div class="rec">
+    <div class="rec-label">Team Totals</div>
+    <div class="rec-val" id="r-tt">—</div>
+    <div class="rec-sub" id="r-tt-pct">—</div>
+    <div class="rec-sub2" id="r-tt-top10">—</div>
+  </div>
+  <div class="rec">
+    <div class="rec-label">Spreads</div>
+    <div class="rec-val" id="r-sp">—</div>
+    <div class="rec-sub" id="r-sp-pct">—</div>
+    <div class="rec-sub2" id="r-sp-top10">—</div>
+  </div>
+</div>
 
-    <h2>👥 Team Totals — Top Picks by Brain Score</h2>
-    <div class="dl-links">
-      <a href="data/team_totals_today.csv">⬇ Download CSV</a>
+<!-- Tabs -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="gt">Game Totals <span class="tab-ct" id="ct-gt">0</span></div>
+    <div class="tab" data-tab="tt">Team Totals <span class="tab-ct" id="ct-tt">0</span></div>
+    <div class="tab" data-tab="sp">Spreads <span class="tab-ct" id="ct-sp">0</span></div>
+  </div>
+</div>
+
+<main>
+  <div class="panel active" id="panel-gt"></div>
+  <div class="panel" id="panel-tt"></div>
+  <div class="panel" id="panel-sp"></div>
+</main>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────────────────
+const GITHUB_USER = 'CameronBroussard6';
+const GITHUB_REPO = 'cbb-site';
+const BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main`;
+
+// Tabs and their CSV file prefixes / display labels
+const TABS = {
+  gt: { label: 'Game Totals',  file: 'brain_game_totals',  histFile: 'game_totals_history' },
+  tt: { label: 'Team Totals',  file: 'brain_team_totals',  histFile: 'team_totals_history' },
+  sp: { label: 'Spreads',      file: 'brain_spreads',      histFile: 'spreads_history'     },
+};
+
+// Which CSV columns are the model prediction columns (used to compute AG score)
+// These are the columns that vote for over/under — adjust to match your actual brain CSV columns
+const MODEL_COLS = {
+  gt: ['ridge_pred_total', 'recency_pred_total', 'ensemble_pred_total'],
+  tt: ['pred_team_total'],
+  sp: ['model_spread_str'],
+};
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function today() { return new Date().toISOString().slice(0, 10); }
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
+function fmtDateOrdinal(str) {
+  if (!str) return '—';
+  const d = new Date(str + 'T12:00:00');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${days[d.getDay()]}, ${months[d.getMonth()]} ${ordinal(d.getDate())} ${d.getFullYear()}`;
+}
+
+function fmtLastRun(isoStr) {
+  if (!isoStr) return 'Last Run: —';
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return 'Last Run: —';
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    month: 'long', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true
+  }).formatToParts(d);
+  const get = t => parts.find(p => p.type === t)?.value || '';
+  const day = Number(get('day'));
+  return `Last Run: ${get('month')} ${ordinal(day)} ${get('year')} ${get('hour')}:${get('minute')} ${(get('dayPeriod')||'').toLowerCase()} Central`;
+}
+
+async function fetchCSV(url) {
+  try {
+    const r = await fetch(url + '?t=' + Date.now());
+    if (!r.ok) return null;
+    return parseCSV(await r.text());
+  } catch(e) { return null; }
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map(line => {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; continue; }
+      if (line[i] === ',' && !inQ) { vals.push(cur); cur = ''; continue; }
+      cur += line[i];
+    }
+    vals.push(cur);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i]||'').trim());
+    return obj;
+  });
+}
+
+function fmt(v, d=1) {
+  const n = parseFloat(v);
+  return isNaN(n) ? '—' : n.toFixed(d);
+}
+
+function fmtRec(w, l) { return (w+l===0) ? '—' : `${w}-${l}`; }
+function pct(w, l)     { return (w+l===0) ? '—' : `${Math.round(w/(w+l)*100)}%`; }
+
+// ── AG SCORE ───────────────────────────────────────────────────────────────
+// Computed from model prediction columns vs the market line and bet direction
+// For game totals: count how many model preds agree with bet direction (OVER/UNDER)
+// For spreads: how many models agree with the spread pick
+function computeAGScore(row, tabKey) {
+  const bet = (row.bet || row.pick || '').toUpperCase();
+  if (!bet || bet === '' || bet === 'PASS') return null;
+
+  const cols = MODEL_COLS[tabKey] || [];
+  if (cols.length === 0) return null;
+
+  let market, agrees = 0, total = 0;
+
+  if (tabKey === 'gt' || tabKey === 'tt') {
+    market = parseFloat(row.market_total || row.market_team_total || 0);
+    if (isNaN(market)) return null;
+    cols.forEach(col => {
+      const pred = parseFloat(row[col]);
+      if (isNaN(pred)) return;
+      total++;
+      const predSide = pred > market ? 'OVER' : 'UNDER';
+      if (predSide === bet) agrees++;
+    });
+  } else if (tabKey === 'sp') {
+    // For spreads, use edge_pts as proxy — if positive, models lean to pick
+    // If only one spread model, AG is just 0 or 1
+    const edge = parseFloat(row.edge_pts || 0);
+    return isNaN(edge) ? null : Math.min(1, Math.abs(edge) / 10);
+  }
+
+  return total === 0 ? null : agrees / total;
+}
+
+function agScoreStyle(score) {
+  if (score === null || isNaN(score)) return 'color:#707784;font-weight:500;';
+  const hue = score * 120; // 0=red, 120=green
+  return `color:hsl(${hue},55%,62%);font-weight:700;`;
+}
+
+function agScoreDisplay(score) {
+  if (score === null || isNaN(score)) return '—';
+  return `${Math.round(score * 100)}%`;
+}
+
+function agBarFill(score) {
+  if (score === null || isNaN(score)) return 0;
+  return Math.round(score * 100);
+}
+
+// ── EDGE SCORE STYLE ───────────────────────────────────────────────────────
+function edgeScoreClass(score) {
+  const n = parseFloat(score);
+  if (isNaN(n)) return '';
+  if (n >= 8) return 'es-high';
+  if (n >= 4) return 'es-med';
+  return 'es-low';
+}
+
+// ── BET BADGE ──────────────────────────────────────────────────────────────
+function betBadge(row, tabKey) {
+  const raw = (row.bet || row.pick || '').toUpperCase();
+
+  if (tabKey === 'gt' || tabKey === 'tt') {
+    const line = fmt(row.market_total || row.market_team_total, 1);
+    if (raw === 'OVER') return `<span class="badge b-over"><span class="badge-arrow">↑</span><span class="badge-copy"><span class="badge-main">Over ${line}</span></span></span>`;
+    if (raw === 'UNDER') return `<span class="badge b-under"><span class="badge-arrow">↓</span><span class="badge-copy"><span class="badge-main">Under ${line}</span></span></span>`;
+  }
+
+  if (tabKey === 'sp') {
+    const mkt = row.market_spread_str || '—';
+    if (raw && raw !== '') {
+      const isHome = raw === (row.home_team||'').toUpperCase() || raw.includes('HOME');
+      const cls = isHome ? 'b-home' : 'b-away';
+      const arrow = isHome ? '⌂' : '✈';
+      return `<span class="badge ${cls}"><span class="badge-arrow">${arrow}</span><span class="badge-copy"><span class="badge-main">${row.pick || row.bet}</span><span class="badge-sub">${mkt}</span></span></span>`;
+    }
+  }
+
+  return `<span class="badge b-pass">PASS</span>`;
+}
+
+// ── RECORD COMPUTATION ─────────────────────────────────────────────────────
+function computeRecord(rows, resultCol, topN = null) {
+  if (!rows || !rows.length) return { w: 0, l: 0, p: 0 };
+  let sorted = rows;
+  if (topN) {
+    sorted = rows.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0)).slice(0, topN);
+  }
+  let w=0, l=0, p=0;
+  sorted.forEach(r => {
+    const res = (r[resultCol]||'').toUpperCase();
+    if (res==='W') w++;
+    else if (res==='L') l++;
+    else if (res==='P') p++;
+  });
+  return { w, l, p };
+}
+
+async function loadRecords() {
+  const configs = [
+    { id: 'gt', histFile: 'game_totals_history', resultCol: 'bet_result' },
+    { id: 'tt', histFile: 'team_totals_history',  resultCol: 'bet_result' },
+    { id: 'sp', histFile: 'spreads_history',       resultCol: 'pick_result' },
+  ];
+
+  for (const cfg of configs) {
+    const rows = await fetchCSV(`${BASE}/data/${cfg.histFile}.csv`);
+    if (!rows || !rows.length) continue;
+
+    const all   = computeRecord(rows, cfg.resultCol);
+    const top10 = computeRecord(rows, cfg.resultCol, 10);
+
+    document.getElementById(`r-${cfg.id}`).textContent     = fmtRec(all.w, all.l);
+    document.getElementById(`r-${cfg.id}-pct`).textContent = pct(all.w, all.l);
+    document.getElementById(`r-${cfg.id}-top10`).textContent = `Top10: ${fmtRec(top10.w, top10.l)} ${pct(top10.w, top10.l)}`;
+  }
+}
+
+// ── CARD BUILDER ───────────────────────────────────────────────────────────
+function buildCards(rows, tabKey) {
+  if (!rows || !rows.length) {
+    const label = TABS[tabKey]?.label || tabKey;
+    return `<div class="empty"><div class="icon">🏀</div><p>No ${label} picks for today.</p></div>`;
+  }
+
+  const sorted = rows.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
+
+  return `<div class="game-cards">${sorted.map((r, i) => buildCard(r, i, tabKey)).join('')}</div>`;
+}
+
+function buildCard(r, rank, tabKey) {
+  const ag = computeAGScore(r, tabKey);
+  const agPct = agBarFill(ag);
+  const edgeClass = edgeScoreClass(r.brain_score);
+  const badge = betBadge(r, tabKey);
+
+  // Matchup line
+  const away = r.away_team || '?';
+  const home = r.home_team || r.team_name || '?';
+  const matchup = tabKey === 'tt'
+    ? `<span class="${r.homeAway==='home'?'':'away'}">${home}</span> <span class="vs">${r.homeAway==='home'?'(H)':'(A)'}</span>`
+    : `<span class="away">${away}</span><span class="vs"> @ </span>${home}`;
+
+  // Market + model lines
+  let marketLine = '—', modelLine = '—', edgePts = '—';
+
+  if (tabKey === 'gt') {
+    marketLine = fmt(r.market_total, 1);
+    modelLine  = fmt(r.ensemble_pred_total || r.ridge_pred_total, 1);
+    edgePts    = (() => {
+      const diff = parseFloat(r.ensemble_pred_total || r.ridge_pred_total) - parseFloat(r.market_total);
+      return isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
+    })();
+  } else if (tabKey === 'tt') {
+    marketLine = fmt(r.market_team_total, 1);
+    modelLine  = fmt(r.pred_team_total, 1);
+    edgePts    = (() => {
+      const diff = parseFloat(r.pred_team_total) - parseFloat(r.market_team_total);
+      return isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
+    })();
+  } else if (tabKey === 'sp') {
+    marketLine = r.market_spread_str || '—';
+    modelLine  = r.model_spread_str  || '—';
+    edgePts    = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
+  }
+
+  const edgePtClass = edgePts.startsWith('+') ? 'ep' : edgePts.startsWith('-') ? 'en' : '';
+
+  return `
+<div class="game-card">
+  <div class="gc-head">
+    <div class="gc-matchup">
+      <div class="gc-rank">#${rank+1}</div>
+      <div class="gc-teams">${matchup}</div>
     </div>
-    <div class="section-wrap">
-    <table class="picks-table" id="tbl-team-totals"><thead><tr><th>#</th><th>Team</th><th>H/A</th><th>Market Total</th><th>Bet</th><th>Pred Total</th><th>Brain Score</th></tr></thead><tbody><tr><td>  1</td><td>Georgia Bulldogs</td><td>home</td><td>89.5</td><td>UNDER</td><td>73.0</td><td>12.3</td></tr><tr><td>  2</td><td>Richmond Spiders</td><td>home</td><td>69.5</td><td>OVER</td><td>79.5</td><td>11.5</td></tr><tr><td>  3</td><td>UCF Knights</td><td>home</td><td>89.0</td><td>UNDER</td><td>73.5</td><td>11.2</td></tr><tr><td>  4</td><td>Louisiana Ragin' Cajuns</td><td>home</td><td>65.5</td><td>OVER</td><td>77.5</td><td>10.9</td></tr><tr><td>  5</td><td>Monmouth Hawks</td><td>away</td><td>77.5</td><td>UNDER</td><td>65.5</td><td> 9.1</td></tr><tr><td>  6</td><td>UL Monroe Warhawks</td><td>away</td><td>73.0</td><td>UNDER</td><td>58.5</td><td> 9.1</td></tr><tr><td>  7</td><td>Campbell Fighting Camels</td><td>home</td><td>82.0</td><td>UNDER</td><td>70.5</td><td> 8.9</td></tr><tr><td>  8</td><td>Alabama Crimson Tide</td><td>away</td><td>90.0</td><td>UNDER</td><td>77.0</td><td> 8.6</td></tr><tr><td>  9</td><td>Alabama State Hornets</td><td>home</td><td>78.0</td><td>UNDER</td><td>68.5</td><td> 8.1</td></tr><tr><td> 10</td><td>Arizona State Sun Devils</td><td>home</td><td>72.5</td><td>UNDER</td><td>62.5</td><td> 7.9</td></tr><tr><td> 11</td><td>Hofstra Pride</td><td>home</td><td>71.5</td><td>OVER</td><td>82.5</td><td> 7.8</td></tr><tr><td> 12</td><td>Nevada Wolf Pack</td><td>away</td><td>72.0</td><td>OVER</td><td>80.0</td><td> 7.8</td></tr><tr><td> 13</td><td>San José State Spartans</td><td>away</td><td>71.0</td><td>UNDER</td><td>62.0</td><td> 7.7</td></tr><tr><td> 14</td><td>North Carolina Tar Heels</td><td>home</td><td>73.0</td><td>OVER</td><td>78.5</td><td> 7.5</td></tr><tr><td> 15</td><td>Seton Hall Pirates</td><td>away</td><td>73.0</td><td>UNDER</td><td>64.0</td><td> 7.3</td></tr><tr><td> 16</td><td>Utah Utes</td><td>home</td><td>72.5</td><td>UNDER</td><td>64.0</td><td> 7.3</td></tr><tr><td> 17</td><td>Georgia State Panthers</td><td>away</td><td>66.5</td><td>OVER</td><td>75.0</td><td> 7.2</td></tr><tr><td> 18</td><td>Georgetown Hoyas</td><td>away</td><td>66.0</td><td>OVER</td><td>73.5</td><td> 6.6</td></tr><tr><td> 19</td><td>Grand Canyon Lopes</td><td>away</td><td>81.0</td><td>UNDER</td><td>71.0</td><td> 6.5</td></tr><tr><td> 20</td><td>Fresno State Bulldogs</td><td>home</td><td>77.0</td><td>UNDER</td><td>69.0</td><td> 6.3</td></tr><tr><td> 21</td><td>George Mason Patriots</td><td>away</td><td>68.5</td><td>UNDER</td><td>59.5</td><td> 6.0</td></tr><tr><td> 22</td><td>Utah State Aggies</td><td>away</td><td>82.0</td><td>UNDER</td><td>74.0</td><td> 5.9</td></tr><tr><td> 23</td><td>West Virginia Mountaineers</td><td>away</td><td>72.5</td><td>UNDER</td><td>64.0</td><td> 5.6</td></tr><tr><td> 24</td><td>Purdue Fort Wayne Mastodons</td><td>away</td><td>70.0</td><td>OVER</td><td>77.0</td><td> 5.6</td></tr><tr><td> 25</td><td>Virginia Cavaliers</td><td>home</td><td>81.5</td><td>UNDER</td><td>76.0</td><td> 5.4</td></tr><tr><td> 26</td><td>Central Michigan Chippewas</td><td>home</td><td>74.5</td><td>UNDER</td><td>67.0</td><td> 5.3</td></tr><tr><td> 27</td><td>Massachusetts Minutemen</td><td>home</td><td>79.0</td><td>UNDER</td><td>72.5</td><td> 5.3</td></tr><tr><td> 28</td><td>Jackson State Tigers</td><td>home</td><td>77.0</td><td>UNDER</td><td>75.5</td><td> 5.2</td></tr><tr><td> 29</td><td>Arkansas-Pine Bluff Golden Lions</td><td>away</td><td>76.0</td><td>UNDER</td><td>69.0</td><td> 5.1</td></tr><tr><td> 30</td><td>Texas Tech Red Raiders</td><td>home</td><td>78.0</td><td>UNDER</td><td>74.5</td><td> 5.0</td></tr><tr><td> 31</td><td>Alcorn State Braves</td><td>home</td><td>73.0</td><td>OVER</td><td>79.5</td><td> 5.0</td></tr><tr><td> 32</td><td>Lafayette Leopards</td><td>home</td><td>73.0</td><td>OVER</td><td>78.0</td><td> 5.0</td></tr><tr><td> 33</td><td>Hampton Pirates</td><td>away</td><td>71.5</td><td>UNDER</td><td>67.0</td><td> 4.9</td></tr><tr><td> 34</td><td>Boise State Broncos</td><td>home</td><td>73.0</td><td>UNDER</td><td>65.5</td><td> 4.9</td></tr><tr><td> 35</td><td>Kansas State Wildcats</td><td>home</td><td>70.0</td><td>OVER</td><td>77.0</td><td> 4.9</td></tr><tr><td> 36</td><td>UMass Lowell River Hawks</td><td>away</td><td>71.0</td><td>OVER</td><td>72.0</td><td> 4.7</td></tr><tr><td> 37</td><td>Xavier Musketeers</td><td>home</td><td>71.5</td><td>OVER</td><td>78.0</td><td> 4.6</td></tr><tr><td> 38</td><td>Florida Gators</td><td>home</td><td>91.5</td><td>UNDER</td><td>90.0</td><td> 4.5</td></tr><tr><td> 39</td><td>UCLA Bruins</td><td>home</td><td>72.0</td><td>UNDER</td><td>67.0</td><td> 4.5</td></tr><tr><td> 40</td><td>Stony Brook Seawolves</td><td>home</td><td>67.0</td><td>OVER</td><td>70.5</td><td> 4.3</td></tr><tr><td> 41</td><td>Ohio Bobcats</td><td>away</td><td>77.0</td><td>UNDER</td><td>72.5</td><td> 4.3</td></tr><tr><td> 42</td><td>Northern Illinois Huskies</td><td>home</td><td>69.0</td><td>UNDER</td><td>62.5</td><td> 4.2</td></tr><tr><td> 43</td><td>Army Black Knights</td><td>away</td><td>70.5</td><td>OVER</td><td>73.0</td><td> 4.2</td></tr><tr><td> 44</td><td>South Carolina Gamecocks</td><td>home</td><td>66.5</td><td>UNDER</td><td>62.5</td><td> 3.9</td></tr><tr><td> 45</td><td>Drexel Dragons</td><td>away</td><td>63.0</td><td>OVER</td><td>65.5</td><td> 3.8</td></tr><tr><td> 46</td><td>Kentucky Wildcats</td><td>away</td><td>79.5</td><td>UNDER</td><td>76.5</td><td> 3.5</td></tr><tr><td> 47</td><td>Oklahoma State Cowboys</td><td>away</td><td>80.0</td><td>UNDER</td><td>76.5</td><td> 3.4</td></tr><tr><td> 48</td><td>William & Mary Tribe</td><td>home</td><td>83.0</td><td>OVER</td><td>88.0</td><td> 3.3</td></tr><tr><td> 49</td><td>Maine Black Bears</td><td>home</td><td>69.0</td><td>UNDER</td><td>66.0</td><td> 3.3</td></tr><tr><td> 50</td><td>Texas A&M Aggies</td><td>home</td><td>81.0</td><td>UNDER</td><td>78.0</td><td> 3.2</td></tr><tr><td> 51</td><td>Oregon Ducks</td><td>away</td><td>64.0</td><td>OVER</td><td>66.5</td><td> 3.2</td></tr><tr><td> 52</td><td>Tennessee Volunteers</td><td>away</td><td>75.0</td><td>UNDER</td><td>70.0</td><td> 3.1</td></tr><tr><td> 53</td><td>Vanderbilt Commodores</td><td>away</td><td>81.0</td><td>UNDER</td><td>78.0</td><td> 3.1</td></tr><tr><td> 54</td><td>North Carolina A&T Aggies</td><td>away</td><td>74.5</td><td>OVER</td><td>75.5</td><td> 3.1</td></tr><tr><td> 55</td><td>Illinois Fighting Illini</td><td>home</td><td>82.5</td><td>UNDER</td><td>78.5</td><td> 3.1</td></tr><tr><td> 56</td><td>Alabama A&M Bulldogs</td><td>home</td><td>70.5</td><td>UNDER</td><td>66.0</td><td> 3.1</td></tr><tr><td> 57</td><td>Colorado Buffaloes</td><td>away</td><td>74.0</td><td>OVER</td><td>75.5</td><td> 3.1</td></tr><tr><td> 58</td><td>BYU Cougars</td><td>away</td><td>75.0</td><td>UNDER</td><td>70.0</td><td> 3.0</td></tr><tr><td> 59</td><td>TCU Horned Frogs</td><td>away</td><td>69.5</td><td>OVER</td><td>69.5</td><td> 3.0</td></tr><tr><td> 60</td><td>Missouri Tigers</td><td>away</td><td>76.0</td><td>UNDER</td><td>72.0</td><td> 2.9</td></tr><tr><td> 61</td><td>Nebraska Cornhuskers</td><td>away</td><td>71.0</td><td>OVER</td><td>73.0</td><td> 2.9</td></tr><tr><td> 62</td><td>Mississippi Valley State Delta Devils</td><td>away</td><td>63.0</td><td>OVER</td><td>65.5</td><td> 2.9</td></tr><tr><td> 63</td><td>Elon Phoenix</td><td>home</td><td>71.0</td><td>OVER</td><td>73.5</td><td> 2.8</td></tr><tr><td> 64</td><td>Miami (OH) RedHawks</td><td>home</td><td>85.0</td><td>UNDER</td><td>82.0</td><td> 2.8</td></tr><tr><td> 65</td><td>Virginia Tech Hokies</td><td>home</td><td>77.0</td><td>OVER</td><td>81.0</td><td> 2.8</td></tr><tr><td> 66</td><td>Old Dominion Monarchs</td><td>home</td><td>84.0</td><td>UNDER</td><td>82.5</td><td> 2.8</td></tr><tr><td> 67</td><td>NJIT Highlanders</td><td>home</td><td>67.5</td><td>UNDER</td><td>66.5</td><td> 2.7</td></tr><tr><td> 68</td><td>Holy Cross Crusaders</td><td>away</td><td>69.0</td><td>UNDER</td><td>65.5</td><td> 2.7</td></tr><tr><td> 69</td><td>Syracuse Orange</td><td>away</td><td>73.0</td><td>UNDER</td><td>69.0</td><td> 2.6</td></tr><tr><td> 70</td><td>Clemson Tigers</td><td>away</td><td>69.0</td><td>OVER</td><td>71.0</td><td> 2.5</td></tr><tr><td> 71</td><td>Towson Tigers</td><td>away</td><td>68.0</td><td>UNDER</td><td>64.0</td><td> 2.4</td></tr><tr><td> 72</td><td>Southern Jaguars</td><td>away</td><td>75.0</td><td>OVER</td><td>78.5</td><td> 2.4</td></tr><tr><td> 73</td><td>Oklahoma Sooners</td><td>home</td><td>78.5</td><td>UNDER</td><td>76.5</td><td> 2.3</td></tr><tr><td> 74</td><td>Ball State Cardinals</td><td>away</td><td>66.0</td><td>OVER</td><td>68.0</td><td> 2.3</td></tr><tr><td> 75</td><td>Western Michigan Broncos</td><td>home</td><td>69.0</td><td>OVER</td><td>72.0</td><td> 2.2</td></tr><tr><td> 76</td><td>Mississippi State Bulldogs</td><td>away</td><td>69.0</td><td>OVER</td><td>70.0</td><td> 2.0</td></tr><tr><td> 77</td><td>Vermont Catamounts</td><td>home</td><td>74.0</td><td>OVER</td><td>77.0</td><td> 2.0</td></tr><tr><td> 78</td><td>Louisville Cardinals</td><td>home</td><td>85.0</td><td>UNDER</td><td>83.0</td><td> 2.0</td></tr><tr><td> 79</td><td>Boston College Eagles</td><td>away</td><td>65.5</td><td>UNDER</td><td>62.5</td><td> 2.0</td></tr><tr><td> 80</td><td>Auburn Tigers</td><td>home</td><td>82.5</td><td>UNDER</td><td>81.0</td><td> 1.9</td></tr><tr><td> 81</td><td>UMBC Retrievers</td><td>away</td><td>73.0</td><td>UNDER</td><td>70.0</td><td> 1.9</td></tr><tr><td> 82</td><td>Buffalo Bulls</td><td>home</td><td>74.0</td><td>OVER</td><td>75.5</td><td> 1.9</td></tr><tr><td> 83</td><td>St. John's Red Storm</td><td>home</td><td>82.5</td><td>OVER</td><td>84.0</td><td> 1.8</td></tr><tr><td> 84</td><td>UNLV Rebels</td><td>home</td><td>74.0</td><td>OVER</td><td>76.0</td><td> 1.8</td></tr><tr><td> 85</td><td>New Hampshire Wildcats</td><td>home</td><td>68.5</td><td>OVER</td><td>69.5</td><td> 1.7</td></tr><tr><td> 86</td><td>Akron Zips</td><td>away</td><td>86.0</td><td>UNDER</td><td>85.0</td><td> 1.7</td></tr><tr><td> 87</td><td>Grambling Tigers</td><td>away</td><td>68.0</td><td>OVER</td><td>69.0</td><td> 1.6</td></tr><tr><td> 88</td><td>Dayton Flyers</td><td>away</td><td>75.0</td><td>UNDER</td><td>73.0</td><td> 1.6</td></tr><tr><td> 89</td><td>Bryant Bulldogs</td><td>away</td><td>67.0</td><td>UNDER</td><td>65.5</td><td> 1.5</td></tr><tr><td> 90</td><td>Kent State Golden Flashes</td><td>away</td><td>80.0</td><td>UNDER</td><td>79.0</td><td> 1.5</td></tr><tr><td> 91</td><td>Cincinnati Bearcats</td><td>home</td><td>77.0</td><td>UNDER</td><td>75.5</td><td> 1.5</td></tr><tr><td> 92</td><td>Bucknell Bison</td><td>home</td><td>73.5</td><td>OVER</td><td>74.0</td><td> 1.5</td></tr><tr><td> 93</td><td>LSU Tigers</td><td>away</td><td>73.0</td><td>UNDER</td><td>72.5</td><td> 1.4</td></tr><tr><td> 94</td><td>Ole Miss Rebels</td><td>home</td><td>74.0</td><td>OVER</td><td>74.5</td><td> 1.4</td></tr><tr><td> 95</td><td>Northeastern Huskies</td><td>home</td><td>73.0</td><td>OVER</td><td>75.0</td><td> 1.4</td></tr><tr><td> 96</td><td>UNC Wilmington Seahawks</td><td>away</td><td>75.0</td><td>UNDER</td><td>73.5</td><td> 1.4</td></tr><tr><td> 97</td><td>UAlbany Great Danes</td><td>away</td><td>65.5</td><td>OVER</td><td>66.0</td><td> 1.4</td></tr><tr><td> 98</td><td>Kansas Jayhawks</td><td>away</td><td>79.0</td><td>UNDER</td><td>78.0</td><td> 1.4</td></tr><tr><td> 99</td><td>Air Force Falcons</td><td>home</td><td>60.5</td><td>UNDER</td><td>60.5</td><td> 1.2</td></tr><tr><td>100</td><td>San Diego State Aztecs</td><td>away</td><td>71.0</td><td>OVER</td><td>72.0</td><td> 1.1</td></tr><tr><td>101</td><td>Eastern Michigan Eagles</td><td>away</td><td>70.5</td><td>OVER</td><td>71.0</td><td> 1.0</td></tr><tr><td>102</td><td>Wake Forest Demon Deacons</td><td>away</td><td>67.0</td><td>UNDER</td><td>66.5</td><td> 0.8</td></tr><tr><td>103</td><td>VCU Rams</td><td>home</td><td>79.0</td><td>OVER</td><td>79.5</td><td> 0.6</td></tr><tr><td>104</td><td>Wyoming Cowboys</td><td>home</td><td>72.0</td><td>OVER</td><td>72.5</td><td> 0.6</td></tr><tr><td>105</td><td>Green Bay Phoenix</td><td>home</td><td>74.0</td><td>OVER</td><td>74.5</td><td> 0.5</td></tr><tr><td>106</td><td>Toledo Rockets</td><td>away</td><td>77.0</td><td>UNDER</td><td>76.5</td><td> 0.4</td></tr></tbody></table>
+    <div>${badge}</div>
+  </div>
+  <div class="gc-body">
+    <div class="gc-cell">
+      <div class="gc-cell-label">Edge Score</div>
+      <div class="gc-cell-value es ${edgeClass}">${fmt(r.brain_score, 1)}</div>
     </div>
-  </main>
-  <footer>
-    CBB Analytics Pipeline · Private use only · Not financial advice
-  </footer>
+    <div class="gc-cell">
+      <div class="gc-cell-label">AG Score</div>
+      <div class="gc-cell-value es" style="${agScoreStyle(ag)}">${agScoreDisplay(ag)}</div>
+      <div class="ag-bar"><div class="ag-bar-track"><div class="ag-bar-fill" style="width:${agPct}%"></div></div></div>
+    </div>
+    <div class="gc-cell">
+      <div class="gc-cell-label">Market</div>
+      <div class="gc-cell-value">${marketLine}</div>
+      <div class="gc-pred">Model: <span>${modelLine}</span></div>
+    </div>
+    <div class="gc-cell">
+      <div class="gc-cell-label">Edge</div>
+      <div class="gc-cell-value ${edgePtClass}">${edgePts}</div>
+    </div>
+  </div>
+</div>`;
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+async function init() {
+  const dateStr = today();
+  document.getElementById('run-date').textContent = fmtDateOrdinal(dateStr);
+
+  // Try to get last-run timestamp from meta.json written by pipeline
+  const meta = await fetch(`${BASE}/meta.json?t=` + Date.now())
+    .then(r => r.ok ? r.json() : null).catch(() => null);
+  if (meta && meta.run_timestamp) {
+    document.getElementById('updated').textContent = fmtLastRun(meta.run_timestamp);
+  }
+
+  let sawData = false;
+
+  for (const [tabKey, cfg] of Object.entries(TABS)) {
+    const panel = document.getElementById(`panel-${tabKey}`);
+    panel.innerHTML = `<div class="empty"><div class="icon">⟳</div><p>Loading…</p></div>`;
+
+    // Try today, fall back to yesterday
+    let rows = await fetchCSV(`${BASE}/data/${cfg.file}_${dateStr}.csv`);
+    if (!rows || !rows.length) {
+      const yd = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+      rows = await fetchCSV(`${BASE}/data/${cfg.file}_${yd}.csv`);
+    }
+
+    if (rows && rows.length) {
+      sawData = true;
+      document.getElementById(`ct-${tabKey}`).textContent = String(rows.length);
+      panel.innerHTML = buildCards(rows, tabKey);
+    } else {
+      document.getElementById(`ct-${tabKey}`).textContent = '0';
+      panel.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No ${cfg.label} data yet.</p></div>`;
+    }
+  }
+
+  // If no meta.json, fall back to now if we saw data
+  if (!meta && sawData) {
+    document.getElementById('updated').textContent = fmtLastRun(new Date().toISOString());
+  }
+
+  // Load W-L records from history CSVs
+  loadRecords();
+}
+
+// ── TAB SWITCHING ──────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(`panel-${t.dataset.tab}`).classList.add('active');
+  });
+});
+
+init();
+</script>
 </body>
 </html>
