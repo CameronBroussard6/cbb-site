@@ -238,7 +238,7 @@ main { padding: 14px; }
 }
 .badge-arrow { font-size: 13px; font-weight: 700; line-height: 1; padding-top: 1px; }
 .badge-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
-.badge-main { font-size: 10px; font-weight: 700; letter-spacing: 0.02em; }
+.badge-main { font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: #ffffff; }
 .badge-sub  { font-size: 8px; opacity: 0.85; line-height: 1; }
 
 /* ── SCORE STYLES ── */
@@ -350,7 +350,6 @@ main { padding: 14px; }
 .gc-market-val.sp-agree { color: #4ade80; }
 .gc-market-val.sp-disagree { color: #ef4444; }
 .b-spread { background: #7c3500; border: 1px solid var(--warn); }
-.b-spread .badge-main { color: var(--warn); }
 .gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; font-feature-settings: "zero" 0; }
 .gc-pred-val.pred-over { color: #4ade80; }
 .gc-pred-val.pred-under { color: #93c5fd; }
@@ -676,8 +675,8 @@ function betBadge(row, tabKey) {
 
   if (tabKey === 'gt' || tabKey === 'tt') {
     const line = fmt(row.market_total || row.market_team_total, 1);
-    if (raw === 'OVER') return `<span class="badge b-spread"><span class="badge-arrow">↑</span><span class="badge-copy"><span class="badge-main">Over ${line}</span></span></span>`;
-    if (raw === 'UNDER') return `<span class="badge b-spread"><span class="badge-arrow">↓</span><span class="badge-copy"><span class="badge-main">Under ${line}</span></span></span>`;
+    if (raw === 'OVER') return `<span class="badge b-spread"><span class="badge-arrow">↑</span><span class="badge-copy"><span class="badge-main"><strong>Over</strong> ${line}</span></span></span>`;
+    if (raw === 'UNDER') return `<span class="badge b-spread"><span class="badge-arrow">↓</span><span class="badge-copy"><span class="badge-main"><strong>Under</strong> ${line}</span></span></span>`;
   }
 
   if (tabKey === 'sp') {
