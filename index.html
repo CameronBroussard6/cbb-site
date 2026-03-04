@@ -478,7 +478,16 @@ const MODEL_COLS = {
 };
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
-function today() { return new Date().toISOString().slice(0, 10); }
+// Always use Central time — pipeline runs on Central schedule
+function todayCentral() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(new Date());
+}
+// Try today, yesterday, tomorrow in Central time so data is found regardless of load time
+function candidateDates() {
+  const now = new Date();
+  const fmtC = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(d);
+  return [fmtC(now), fmtC(new Date(now - 86400000)), fmtC(new Date(+now + 86400000))];
+}
 
 function ordinal(n) {
   const s = ['th','st','nd','rd'], v = n % 100;
@@ -510,9 +519,9 @@ function fmtLastRun(isoStr) {
 async function fetchCSV(url) {
   try {
     const r = await fetch(url + '?t=' + Date.now());
-    if (!r.ok) return null;
+    if (!r.ok) { console.warn(`CSV 404: ${url}`); return null; }
     return parseCSV(await r.text());
-  } catch(e) { return null; }
+  } catch(e) { console.warn(`CSV error: ${url}`, e); return null; }
 }
 
 function parseCSV(text) {
@@ -753,8 +762,8 @@ function buildCard(r, rank, tabKey) {
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 async function init() {
-  const dateStr = today();
-  document.getElementById('run-date').textContent = fmtDateOrdinal(dateStr);
+  const dates = candidateDates(); // [today, yesterday, tomorrow] in Central
+  document.getElementById('run-date').textContent = fmtDateOrdinal(dates[0]);
 
   // Try to get last-run timestamp from meta.json written by pipeline
   const meta = await fetch(`${BASE}/meta.json?t=` + Date.now())
@@ -769,11 +778,11 @@ async function init() {
     const panel = document.getElementById(`panel-${tabKey}`);
     panel.innerHTML = `<div class="empty"><div class="icon">⟳</div><p>Loading…</p></div>`;
 
-    // Try today, fall back to yesterday
-    let rows = await fetchCSV(`${BASE}/data/${cfg.file}_${dateStr}.csv`);
-    if (!rows || !rows.length) {
-      const yd = new Date(Date.now() - 86400000).toISOString().slice(0,10);
-      rows = await fetchCSV(`${BASE}/data/${cfg.file}_${yd}.csv`);
+    // Try today, yesterday, tomorrow until we find data
+    let rows = null;
+    for (const d of dates) {
+      rows = await fetchCSV(`${BASE}/data/${cfg.file}_${d}.csv`);
+      if (rows && rows.length) break;
     }
 
     if (rows && rows.length) {
@@ -782,7 +791,8 @@ async function init() {
       panel.innerHTML = buildCards(rows, tabKey);
     } else {
       document.getElementById(`ct-${tabKey}`).textContent = '0';
-      panel.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No ${cfg.label} data yet.</p></div>`;
+      const tried = dates.map(d => `brain_${tabKey === 'gt' ? 'game_totals' : tabKey === 'tt' ? 'team_totals' : 'spreads'}_${d}.csv`).join(', ');
+      panel.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No ${cfg.label} data yet.</p><p style="font-size:10px;margin-top:8px;color:#707784;font-family:monospace;">Tried: ${tried}</p></div>`;
     }
   }
 
