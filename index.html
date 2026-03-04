@@ -752,26 +752,21 @@ function buildCard(r, rank, tabKey) {
   const away = r.away_team || '?';
   const home = r.home_team || r.team_name || '?';
 
-  // For spreads: compute per-team lines for header
+  // For spreads: derive per-team lines directly from pick column
   let spAwayLine = '', spHomeLine = '';
   if (tabKey === 'sp') {
-    const mktStr = r.market_spread_str || '';
-    const mktM = mktStr.match(/^(.+?)\s+([+-]?\d+\.?\d*)$/);
-    if (mktM) {
-      const mktNum = parseFloat(mktM[2]);
-      const mktTeam = mktM[1].trim();
-      if (!isNaN(mktNum)) {
-        const homeIsFav = mktTeam === home || mktNum < 0;
-        const favLine = mktNum < 0 ? mktNum : -Math.abs(mktNum);
-        const dogLine = -favLine;
-        const favLineStr = favLine % 1 === 0 ? favLine.toFixed(0) : favLine.toFixed(1);
-        const dogLineStr = (dogLine > 0 ? '+' : '') + (dogLine % 1 === 0 ? dogLine.toFixed(0) : dogLine.toFixed(1));
-        // pick direction: does our pick match home or away?
-        const pickStr = (r.pick || '').toLowerCase();
-        const pickHome = pickStr.includes(home.split(' ')[0].toLowerCase());
-        spHomeLine = pickHome ? favLineStr : dogLineStr;
-        spAwayLine = pickHome ? dogLineStr : favLineStr;
-      }
+    const pickLineRaw = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
+    if (pickLineRaw) {
+      const pickNum = parseFloat(pickLineRaw[1]);
+      const absP = Math.abs(pickNum);
+      const absStr = absP % 1 === 0 ? absP.toFixed(0) : absP.toFixed(1);
+      const pickLineStr = (pickNum < 0 ? '-' : '+') + absStr;
+      const otherLineStr = (pickNum < 0 ? '+' : '-') + absStr;
+      // which team is the pick?
+      const pickStr = (r.pick||'').replace(/[+-]?\d+\.?\d*$/, '').trim().toLowerCase();
+      const pickIsHomeH = pickStr.includes(home.split(' ')[0].toLowerCase());
+      spHomeLine = pickIsHomeH ? pickLineStr : otherLineStr;
+      spAwayLine = pickIsHomeH ? otherLineStr : pickLineStr;
     }
   }
   const haStr = r.homeAway==='home' ? 'Home' : 'Away';
@@ -858,14 +853,28 @@ function buildCard(r, rank, tabKey) {
       const pickMargin = pickIsHomeTeam ? m : -m;
       // pickMargin > 0 means pick team wins = they are the favorite = minus line
       const absVal = Math.abs(pickMargin) % 1 === 0 ? Math.abs(pickMargin).toFixed(0) : Math.abs(pickMargin).toFixed(1);
-      const lineStr = pickMargin >= 0
-        ? shortPickTeam + ' -' + absVal
-        : shortPickTeam + ' +' + absVal;
+      // Always show from model-projected winner's perspective
+      const otherTeamFull = pickIsHomeTeam ? (r.away_team||'') : (r.home_team||'');
+      const shortOtherTeam = otherTeamFull.split(' ').slice(0,2).join(' ');
+      let lineStr;
+      if (pickMargin >= 0) {
+        // model says pick team wins — show pick team minus
+        lineStr = shortPickTeam + ' -' + absVal;
+      } else {
+        // model says other team wins — show other team minus (pick team would be +)
+        lineStr = shortOtherTeam + ' +' + absVal;
+      }
       // Agree if model also picks our team (same sign as pick line)
       const pickLineMatch2 = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
       const pickLineNum2 = pickLineMatch2 ? parseFloat(pickLineMatch2[1]) : NaN;
       const pickIsMinus2 = !isNaN(pickLineNum2) && pickLineNum2 < 0;
-      const modelAgreesWithPick = pickIsMinus2 ? (pickMargin >= 0) : (pickMargin < 0);
+      const marketAbs = Math.abs(pickLineNum2); // e.g. 2.5 for -2.5 or +2.5
+      // Agree = model projects pick team covers the spread:
+      // if pick is minus (fav): pickMargin must exceed marketAbs (win by more than spread)
+      // if pick is plus (dog):  pickMargin must be > -marketAbs (lose by less than spread, or win)
+      const modelAgreesWithPick = pickIsMinus2
+        ? (pickMargin > marketAbs)
+        : (pickMargin > -marketAbs);
       const cls = modelAgreesWithPick ? 'pred-over' : 'pred-under';
       return `<span class="gc-market-val ${cls}">${lineStr}</span>`;
     };
