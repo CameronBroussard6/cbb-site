@@ -13,7 +13,7 @@ rank,date,game_id,away_team,home_team,market_total,bet,ridge_pred_total,recency_
 12,2026-03-04,401820782,Stanford Cardinal,Notre Dame Fighting Irish,145,OVER,150.5,150.5,146,-3.5,150.5,148.5,8.6
 13,2026-03-04,401825559,Maryland Terrapins,Wisconsin Badgers,153.5,UNDER,148,149,148,-4.5,148.5,146.5,8.5
 14,2026-03-04,401851523,Eastern Illinois Panthers,SIU Edwardsville Cougars,127,OVER,134.5,132.5,124.5,-8.5,133.5,146.5,8.4
-15,2026-03-04,401851515,Fairleigh Dickinson Knights,Mercyhurst Lakers,134,UNDER,131.5,124.5,144.5,-5.5,128,147,8.4
+15,2026-03-04,401851515,Fairleigh Dickinson Knights,Mercyhurst Lakers,134,UNDER,131.5,124.5,144.5,-5.5,128,147,8.1
 16,2026-03-04,401822971,Marquette Golden Eagles,Providence Friars,162,UNDER,153.5,179,145.5,1,166.5,151,8.1
 17,2026-03-04,401851514,Wagner Seahawks,Central Connecticut Blue Devils,140,UNDER,135,135.5,139,-3.5,135,146,8
 18,2026-03-04,401825555,Minnesota Golden Gophers,Indiana Hoosiers,138,OVER,141,146,128.5,-1,143.5,147,7.3
@@ -24,13 +24,13 @@ rank,date,game_id,away_team,home_team,market_total,bet,ridge_pred_total,recency_
 23,2026-03-04,401851424,Youngstown State Penguins,Robert Morris Colonials,143,OVER,145.5,147,145.5,-5,146,146.5,6.3
 24,2026-03-04,401851428,Northern Kentucky Norse,Oakland Golden Grizzlies,159,UNDER,155,156,160,0.5,155.5,148,5.9
 25,2026-03-04,401851619,Kansas City Roos,Oral Roberts Golden Eagles,147.5,OVER,152.5,145,153.5,-4,148.5,146,5
-26,2026-03-04,401820783,Florida State Seminoles,Pittsburgh Panthers,145,UNDER,142,162,142.5,-3.5,152,149,4.9
+26,2026-03-04,401820783,Florida State Seminoles,Pittsburgh Panthers,145,UNDER,142,162,142.5,-3.5,152,149,4.8
 27,2026-03-04,401851524,Little Rock Trojans,Lindenwood Lions,149,UNDER,145.5,150.5,144,-1.5,148,147.5,4.8
 28,2026-03-04,401851241,Stetson Hatters,Eastern Kentucky Colonels,156,OVER,156,162,150,-0.5,159,151,4.6
 29,2026-03-04,401851426,Milwaukee Panthers,Detroit Mercy Titans,153,UNDER,151.5,152,158.5,-1,151.5,149.5,4.4
 30,2026-03-04,401828458,Duquesne Dukes,Rhode Island Rams,143,OVER,143,145,145,-2.5,144,146,3.9
-31,2026-03-04,401820780,California Golden Bears,Georgia Tech Yellow Jackets,156,OVER,156,160,136.5,-5.5,158,148.5,3.8
-32,2026-03-04,401851238,Jacksonville Dolphins,Bellarmine Knights,146,UNDER,145,151,163.5,-0.5,148,150,3.6
+31,2026-03-04,401851238,Jacksonville Dolphins,Bellarmine Knights,147.5,UNDER,145,151,163.5,-0.5,148,150,3.8
+32,2026-03-04,401820780,California Golden Bears,Georgia Tech Yellow Jackets,156,UNDER,156,160,136.5,-5.5,158,148.5,3.5
 33,2026-03-04,401828457,Saint Joseph's Hawks,Davidson Wildcats,138,OVER,138.5,117.5,148.5,-3,128,144.5,3.3
 34,2026-03-04,401828459,Fordham Rams,La Salle Explorers,133,OVER,134.5,130.5,138,-7.5,132.5,145,3
 35,2026-03-04,401827721,Baylor Bears,Houston Cougars,142.5,OVER,145,142.5,149,-0.5,143.5,148.5,2.9
