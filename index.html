@@ -623,10 +623,17 @@ function computeAGScore(row, tabKey) {
       if (predSide === bet) agrees++;
     });
   } else if (tabKey === 'sp') {
-    // For spreads, use edge_pts as proxy — if positive, models lean to pick
-    // If only one spread model, AG is just 0 or 1
-    const edge = parseFloat(row.edge_pts || 0);
-    return isNaN(edge) ? null : Math.min(1, Math.abs(edge) / 10);
+    // Pick direction: positive edge_blend = home favored by model
+    const blendMargin = parseFloat(row.pred_margin_blend || 0);
+    const pickIsHome = blendMargin > 0;
+    const margins = [row.pred_margin_04, row.pred_margin_09, row.pred_margin_10];
+    margins.forEach(m => {
+      const v = parseFloat(m);
+      if (isNaN(v)) return;
+      total++;
+      const modelPicksHome = v > 0;
+      if (modelPicksHome === pickIsHome) agrees++;
+    });
   }
 
   return total === 0 ? null : agrees / total;
@@ -744,8 +751,34 @@ function buildCard(r, rank, tabKey) {
   // Matchup line
   const away = r.away_team || '?';
   const home = r.home_team || r.team_name || '?';
+
+  // For spreads: compute per-team lines for header
+  let spAwayLine = '', spHomeLine = '';
+  if (tabKey === 'sp') {
+    const mktStr = r.market_spread_str || '';
+    const mktM = mktStr.match(/^(.+?)\s+([+-]?\d+\.?\d*)$/);
+    if (mktM) {
+      const mktNum = parseFloat(mktM[2]);
+      const mktTeam = mktM[1].trim();
+      if (!isNaN(mktNum)) {
+        const homeIsFav = mktTeam === home || mktNum < 0;
+        const favLine = mktNum < 0 ? mktNum : -Math.abs(mktNum);
+        const dogLine = -favLine;
+        const favLineStr = favLine % 1 === 0 ? favLine.toFixed(0) : favLine.toFixed(1);
+        const dogLineStr = (dogLine > 0 ? '+' : '') + (dogLine % 1 === 0 ? dogLine.toFixed(0) : dogLine.toFixed(1));
+        // pick direction: does our pick match home or away?
+        const pickStr = (r.pick || '').toLowerCase();
+        const pickHome = pickStr.includes(home.split(' ')[0].toLowerCase());
+        spHomeLine = pickHome ? favLineStr : dogLineStr;
+        spAwayLine = pickHome ? dogLineStr : favLineStr;
+      }
+    }
+  }
+  const haStr = r.homeAway==='home' ? 'Home' : 'Away';
   const matchup = tabKey === 'tt'
-    ? `<span class="away">${home}</span><span class="vs">${r.homeAway==='home'?'(H)':'(A)'}</span>`
+    ? `<span class="away">${home} <span style="font-size:9px;font-weight:400;color:var(--muted);">(${haStr})</span></span>`
+    : tabKey === 'sp'
+    ? `<span class="away">${away} <span style="font-size:9px;color:var(--muted2);">${spAwayLine}</span></span><span class="vs">@</span><span class="home-team">${home} <span style="font-size:9px;color:var(--muted2);">${spHomeLine}</span></span>`
     : `<span class="away">${away}</span><span class="vs">@</span><span class="home-team">${home}</span>`;
 
   // Market + model lines
@@ -934,14 +967,23 @@ async function init() {
 }
 
 // ── TAB SWITCHING ──────────────────────────────────────────────────────────
+function switchTab(key) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  const btn = document.querySelector(`.tab[data-tab="${key}"]`);
+  const panel = document.getElementById(`panel-${key}`);
+  if (btn) btn.classList.add('active');
+  if (panel) panel.classList.add('active');
+  history.replaceState(null, '', '#' + key);
+}
 document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById(`panel-${t.dataset.tab}`).classList.add('active');
-  });
+  t.addEventListener('click', () => switchTab(t.dataset.tab));
 });
+// Restore tab from hash on load
+const hashTab = window.location.hash.replace('#','');
+if (hashTab && document.querySelector(`.tab[data-tab="${hashTab}"]`)) {
+  switchTab(hashTab);
+}
 
 init();
 </script>
