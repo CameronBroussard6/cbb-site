@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>CTB Analytics — College Basketball Sheet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:        #0d0f12;
@@ -29,12 +29,12 @@
   --warn:      #f59e0b;
   --danger:    #ef4444;
   --gold:      #d4af37;
-  --mono:      'Share Tech Mono', monospace;
+  --mono:      'Roboto Mono', monospace;
+  --mono-settings: 'zero' 0;
   --sans:      'IBM Plex Sans', sans-serif;
   --r:         8px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-* { font-variant-numeric: normal; }
 body {
   font-family: var(--sans);
   background: var(--bg);
@@ -242,7 +242,7 @@ main { padding: 14px; }
 .badge-sub  { font-size: 8px; opacity: 0.85; line-height: 1; }
 
 /* ── SCORE STYLES ── */
-.es { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.es { font-family: var(--mono); font-size: 13px; font-weight: 600; font-feature-settings: "zero" 0; }
 .ep { color: var(--blue); }
 .en { color: #f87171; }
 
@@ -321,6 +321,7 @@ main { padding: 14px; }
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
+  font-feature-settings: "zero" 0;
 }
 .gc-market-row {
   display: flex;
@@ -342,8 +343,9 @@ main { padding: 14px; }
   font-size: 11px;
   font-weight: 600;
   color: var(--text);
+  font-feature-settings: "zero" 0;
 }
-.gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; }
+.gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; font-feature-settings: "zero" 0; }
 .gc-pred-val.pred-over { color: #4ade80; }
 .gc-pred-val.pred-under { color: #93c5fd; }
 .gc-pred-grid {
