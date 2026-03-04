@@ -773,7 +773,7 @@ function buildCard(r, rank, tabKey) {
   const matchup = tabKey === 'tt'
     ? `<span class="away">${home} <span style="font-size:9px;font-weight:400;color:var(--muted);">(${haStr})</span></span>`
     : tabKey === 'sp'
-    ? `<span class="away">${away} <span style="font-size:9px;color:var(--muted2);">${spAwayLine}</span></span><span class="vs">@</span><span class="home-team">${home} <span style="font-size:9px;color:var(--muted2);">${spHomeLine}</span></span>`
+    ? `<span class="away">${away} <span style="font-size:9px;color:var(--warn);">${spAwayLine}</span></span><span class="vs">@</span><span class="home-team">${home} <span style="font-size:9px;color:var(--warn);">${spHomeLine}</span></span>`
     : `<span class="away">${away}</span><span class="vs">@</span><span class="home-team">${home}</span>`;
 
   // Market + model lines
