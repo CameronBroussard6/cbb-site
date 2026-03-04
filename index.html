@@ -824,18 +824,16 @@ function buildCard(r, rank, tabKey) {
   } else if (tabKey === 'sp') {
     // Strip mascot from market spread string for display
     // Always show the minus side for market line
-    const mktParts = (r.market_spread_str || '—').match(/^(.+?)\s+([+-]?\d+\.?\d*)$/);
-    if (mktParts) {
-      const mktNum = parseFloat(mktParts[2]);
-      const mktTeamFull = mktParts[1];
-      if (!isNaN(mktNum) && mktNum > 0) {
-        // currently showing plus side — flip to the other team with minus
-        const otherTeam = mktTeamFull.trim() === (r.home_team||'').trim() ? (r.away_team||'') : (r.home_team||'');
-        const shortOther = otherTeam.split(' ').slice(0,2).join(' ');
-        marketLine = shortOther + ' -' + mktNum.toFixed(mktNum % 1 === 0 ? 0 : 1);
-      } else {
-        marketLine = mktTeamFull.split(' ').slice(0,2).join(' ') + ' ' + mktParts[2];
-      }
+    // Show market line from the PICK team's perspective
+    const pickTeam = (r.pick || '').replace(/[+-]?\d+\.?\d*$/, '').trim();
+    const pickLineM = (r.pick || '').match(/([+-]?\d+\.?\d*)$/);
+    const pickLineNum = pickLineM ? parseFloat(pickLineM[1]) : NaN;
+    if (pickTeam && !isNaN(pickLineNum)) {
+      const shortPick = pickTeam.split(' ').slice(0,2).join(' ');
+      const absL = Math.abs(pickLineNum);
+      const absStr = absL % 1 === 0 ? absL.toFixed(0) : absL.toFixed(1);
+      const lineStr = pickLineNum < 0 ? '-' + absStr : '+' + absStr;
+      marketLine = shortPick + ' ' + lineStr;
     } else {
       marketLine = r.market_spread_str || '—';
     }
