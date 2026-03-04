@@ -347,9 +347,15 @@ main { padding: 14px; }
 }
 .gc-market-val.pred-over { color: #4ade80; }
 .gc-market-val.pred-under { color: #93c5fd; }
+.gc-market-val.sp-agree { color: #4ade80; }
+.gc-market-val.sp-disagree { color: #ef4444; }
+.b-spread { background: #7c3500; border: 1px solid var(--warn); }
+.b-spread .badge-main { color: var(--warn); }
 .gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; font-feature-settings: "zero" 0; }
 .gc-pred-val.pred-over { color: #4ade80; }
 .gc-pred-val.pred-under { color: #93c5fd; }
+.gc-pred-val.sp-agree { color: #4ade80; }
+.gc-pred-val.sp-disagree { color: #ef4444; }
 .gc-pred-grid {
   display: grid;
   grid-template-columns: repeat(2, max-content);
@@ -670,8 +676,8 @@ function betBadge(row, tabKey) {
 
   if (tabKey === 'gt' || tabKey === 'tt') {
     const line = fmt(row.market_total || row.market_team_total, 1);
-    if (raw === 'OVER') return `<span class="badge b-over"><span class="badge-arrow">↑</span><span class="badge-copy"><span class="badge-main">Over ${line}</span></span></span>`;
-    if (raw === 'UNDER') return `<span class="badge b-under"><span class="badge-arrow">↓</span><span class="badge-copy"><span class="badge-main">Under ${line}</span></span></span>`;
+    if (raw === 'OVER') return `<span class="badge b-spread"><span class="badge-arrow">↑</span><span class="badge-copy"><span class="badge-main">Over ${line}</span></span></span>`;
+    if (raw === 'UNDER') return `<span class="badge b-spread"><span class="badge-arrow">↓</span><span class="badge-copy"><span class="badge-main">Under ${line}</span></span></span>`;
   }
 
   if (tabKey === 'sp') {
@@ -687,7 +693,7 @@ function betBadge(row, tabKey) {
     // Format line cleanly — no double sign
     const absNum = isNaN(spreadNum) ? '' : Math.abs(spreadNum) % 1 === 0 ? Math.abs(spreadNum).toFixed(0) : Math.abs(spreadNum).toFixed(1);
     const lineStr = isNaN(spreadNum) ? pick : (isMinus ? '-' : '+') + absNum;
-    return `<span class="badge ${cls}"><span class="badge-copy"><span class="badge-main">${shortTeam} ${lineStr}</span></span></span>`;
+    return `<span class="badge b-spread"><span class="badge-copy"><span class="badge-main">${shortTeam} ${lineStr}</span></span></span>`;
   }
 
   return `<span class="badge b-pass">PASS</span>`;
@@ -783,7 +789,13 @@ function buildCard(r, rank, tabKey) {
   if (tabKey === 'gt') {
     marketLine = fmt(r.market_total, 1);
     const mkt = parseFloat(r.market_total);
-    const pc = v => { const n = parseFloat(v); return isNaN(n)||isNaN(mkt) ? '' : n >= mkt ? 'pred-over' : 'pred-under'; };
+    const betIsOver = (r.bet||'').toUpperCase() === 'OVER';
+    const pc = v => {
+      const n = parseFloat(v);
+      if (isNaN(n)||isNaN(mkt)) return '';
+      const modelOver = n >= mkt;
+      return (modelOver === betIsOver) ? 'sp-agree' : 'sp-disagree';
+    };
     const ridge    = fmt(r.ridge_pred_total, 1);
     const recency  = fmt(r.recency_pred_total, 1);
     const teamFoc  = fmt(r.from_team_pred_total, 1);
@@ -804,7 +816,13 @@ function buildCard(r, rank, tabKey) {
   } else if (tabKey === 'tt') {
     marketLine = fmt(r.market_team_total, 1);
     const mkt = parseFloat(r.market_team_total);
-    const pc = v => { const n = parseFloat(v); return isNaN(n)||isNaN(mkt) ? '' : n >= mkt ? 'pred-over' : 'pred-under'; };
+    const betIsOverTT = (r.bet||'').toUpperCase() === 'OVER';
+    const pc = v => {
+      const n = parseFloat(v);
+      if (isNaN(n)||isNaN(mkt)) return '';
+      const modelOver = n >= mkt;
+      return (modelOver === betIsOverTT) ? 'sp-agree' : 'sp-disagree';
+    };
     const predRidge   = fmt(r.pred_team_total, 1);
     const predRecency = fmt(r.recency_team_pred, 1);
     const predSim     = fmt(r.elo_sim_team_pred, 1);
@@ -861,8 +879,8 @@ function buildCard(r, rank, tabKey) {
         // model says pick team wins — show pick team minus
         lineStr = shortPickTeam + ' -' + absVal;
       } else {
-        // model says other team wins — show other team minus (pick team would be +)
-        lineStr = shortOtherTeam + ' +' + absVal;
+        // model says other team wins — show other team with minus line
+        lineStr = shortOtherTeam + ' -' + absVal;
       }
       // Agree if model also picks our team (same sign as pick line)
       const pickLineMatch2 = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
@@ -875,14 +893,14 @@ function buildCard(r, rank, tabKey) {
       const modelAgreesWithPick = pickIsMinus2
         ? (pickMargin > marketAbs)
         : (pickMargin > -marketAbs);
-      const cls = modelAgreesWithPick ? 'pred-over' : 'pred-under';
+      const cls = modelAgreesWithPick ? 'sp-agree' : 'sp-disagree';
       return `<span class="gc-market-val ${cls}">${lineStr}</span>`;
     };
     modelPredRows = `
       <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M1</span>${fmtSpreadLine(r.pred_margin_04)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M2</span>${fmtSpreadLine(r.pred_margin_09)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M3</span>${fmtSpreadLine(r.pred_margin_10)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M1</span>${fmtSpreadLine(r.pred_margin_04)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M2</span>${fmtSpreadLine(r.pred_margin_09)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M3</span>${fmtSpreadLine(r.pred_margin_10)}</div>
       </div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }
