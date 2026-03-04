@@ -763,7 +763,8 @@ async function init() {
   const meta = await fetch(`${BASE}/meta.json?t=` + Date.now())
     .then(r => r.ok ? r.json() : null).catch(() => null);
   if (meta && meta.run_timestamp) {
-    document.getElementById('updated').textContent = fmtLastRun(meta.run_timestamp);
+    const el = document.getElementById('updated');
+    if (el) el.textContent = fmtLastRun(meta.run_timestamp);
   }
 
   let sawData = false;
@@ -788,7 +789,8 @@ async function init() {
 
   // If no meta.json, fall back to now if we saw data
   if (!meta && sawData) {
-    document.getElementById('updated').textContent = fmtLastRun(new Date().toISOString());
+    const el = document.getElementById('updated');
+    if (el) el.textContent = fmtLastRun(new Date().toISOString());
   }
 
   // Load W-L records from history CSVs
