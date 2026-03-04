@@ -464,9 +464,9 @@ const BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/ma
 
 // Tabs and their CSV file prefixes / display labels
 const TABS = {
-  gt: { label: 'Game Totals',  file: 'brain_game_totals',  histFile: 'game_totals_history' },
-  tt: { label: 'Team Totals',  file: 'brain_team_totals',  histFile: 'team_totals_history' },
-  sp: { label: 'Spreads',      file: 'brain_spreads',      histFile: 'spreads_history'     },
+  gt: { label: 'Game Totals',  file: 'game_totals_today',  histFile: 'game_totals_history' },
+  tt: { label: 'Team Totals',  file: 'team_totals_today',  histFile: 'team_totals_history' },
+  sp: { label: 'Spreads',      file: 'spreads_today',      histFile: 'spreads_history'     },
 };
 
 // Which CSV columns are the model prediction columns (used to compute AG score)
@@ -484,9 +484,11 @@ function todayCentral() {
 }
 // Try today, yesterday, tomorrow in Central time so data is found regardless of load time
 function candidateDates() {
+  const ms = now => now.getTime();
   const now = new Date();
   const fmtC = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(d);
-  return [fmtC(now), fmtC(new Date(now - 86400000)), fmtC(new Date(+now + 86400000))];
+  const t = ms(now);
+  return [fmtC(new Date(t)), fmtC(new Date(t - 86400000)), fmtC(new Date(t + 86400000))];
 }
 
 function ordinal(n) {
@@ -778,12 +780,8 @@ async function init() {
     const panel = document.getElementById(`panel-${tabKey}`);
     panel.innerHTML = `<div class="empty"><div class="icon">⟳</div><p>Loading…</p></div>`;
 
-    // Try today, yesterday, tomorrow until we find data
-    let rows = null;
-    for (const d of dates) {
-      rows = await fetchCSV(`${BASE}/data/${cfg.file}_${d}.csv`);
-      if (rows && rows.length) break;
-    }
+    // Files are static names (no date suffix) — just fetch directly
+    let rows = await fetchCSV(`${BASE}/data/${cfg.file}.csv`);
 
     if (rows && rows.length) {
       sawData = true;
@@ -791,7 +789,7 @@ async function init() {
       panel.innerHTML = buildCards(rows, tabKey);
     } else {
       document.getElementById(`ct-${tabKey}`).textContent = '0';
-      const tried = dates.map(d => `brain_${tabKey === 'gt' ? 'game_totals' : tabKey === 'tt' ? 'team_totals' : 'spreads'}_${d}.csv`).join(', ');
+      const tried = `${cfg.file}.csv`;
       panel.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No ${cfg.label} data yet.</p><p style="font-size:10px;margin-top:8px;color:#707784;font-family:monospace;">Tried: ${tried}</p></div>`;
     }
   }
