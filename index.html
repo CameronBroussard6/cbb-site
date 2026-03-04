@@ -802,12 +802,12 @@ function buildCard(r, rank, tabKey) {
       const cls = (!isNaN(e) && e > 0) ? 'pred-over' : 'pred-under';
       return `<span class="gc-pred-val ${cls}">${team} ${lineStr}</span>`;
     };
-    modelPredRows = \`
+    modelPredRows = `
       <div class="gc-pred-grid" style="grid-template-columns:1fr;gap:2px 0;margin-left:0;">
         <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">M1</span>${fmtSpreadLine(r.pred_margin_04, r.edge_04)}</div>
         <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">M2</span>${fmtSpreadLine(r.pred_margin_09, r.edge_09)}</div>
         <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">M3</span>${fmtSpreadLine(r.pred_margin_10, r.edge_10)}</div>
-      </div>\`;
+      </div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }
 
