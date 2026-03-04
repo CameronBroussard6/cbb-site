@@ -1,13 +1,13 @@
 rank,date,game_id,team_name,homeAway,market_team_total,bet,pred_team_total,recency_team_pred,elo_sim_team_pred,brain_score
 1,2026-03-04,401828461,Saint Louis Billikens,home,88.5,UNDER,74.5,82.5,80,10.8
 2,2026-03-04,401822970,Villanova Wildcats,away,69,OVER,84,73,76.5,10.5
-3,2026-03-04,401828460,George Washington Revolutionaries,home,84,UNDER,75.5,77,74.5,7.9
-4,2026-03-04,401851239,Florida Gulf Coast Eagles,home,68,OVER,77,74,75,7.9
+3,2026-03-04,401851239,Florida Gulf Coast Eagles,home,66.5,OVER,77,74,75,9.2
+4,2026-03-04,401828460,George Washington Revolutionaries,home,84,UNDER,75.5,77,74.5,7.9
 5,2026-03-04,401825557,Ohio State Buckeyes,away,80,UNDER,67,80,78,7.8
 6,2026-03-04,401820780,California Golden Bears,away,79,UNDER,67,87,78,7.6
 7,2026-03-04,401822971,Marquette Golden Eagles,away,78,UNDER,67.5,88.5,72,6.9
 8,2026-03-04,401825555,Minnesota Golden Gophers,away,65,UNDER,56.5,69.5,71.5,6.7
-9,2026-03-04,401851515,Mercyhurst Lakers,home,68.5,OVER,75.5,62.5,75.5,6.7
+9,2026-03-04,401851515,Mercyhurst Lakers,home,68,OVER,75.5,62.5,75.5,6.7
 10,2026-03-04,401851346,Gardner-Webb Runnin' Bulldogs,away,66.5,OVER,74,61,69.5,6.6
 11,2026-03-04,401851346,South Carolina Upstate Spartans,home,78,UNDER,72.5,70.5,76,6.3
 12,2026-03-04,401828258,Rice Owls,away,65,OVER,66,78.5,72,6.2
@@ -22,8 +22,8 @@ rank,date,game_id,team_name,homeAway,market_team_total,bet,pred_team_total,recen
 21,2026-03-04,401851514,Wagner Seahawks,away,66.5,OVER,71,61.5,70.5,4.7
 22,2026-03-04,401820783,Pittsburgh Panthers,home,70,OVER,72,79.5,71.5,4.6
 23,2026-03-04,401851243,West Georgia Wolves,home,81.5,UNDER,76.5,77.5,76,4.6
-24,2026-03-04,401851239,North Alabama Lions,away,61,OVER,68.5,61,71,4.5
-25,2026-03-04,401828460,St. Bonaventure Bonnies,away,75.5,UNDER,69,83,73.5,4.4
+24,2026-03-04,401828460,St. Bonaventure Bonnies,away,75.5,UNDER,69,83,73.5,4.4
+25,2026-03-04,401851239,North Alabama Lions,away,62,OVER,68.5,61,71,4.4
 26,2026-03-04,401820782,Notre Dame Fighting Irish,home,73,OVER,77,76.5,71.5,4.1
 27,2026-03-04,401825558,Washington Huskies,home,78.5,UNDER,76.5,72,72,4
 28,2026-03-04,401851516,Stonehill Skyhawks,away,66,OVER,71.5,64.5,71,4

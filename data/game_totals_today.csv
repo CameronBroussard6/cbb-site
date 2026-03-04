@@ -1,6 +1,6 @@
 rank,date,game_id,away_team,home_team,market_total,bet,ridge_pred_total,recency_pred_total,from_team_pred_total,xgb_elo_pred_total,ensemble_pred_total,elo_sim_pred_total,brain_score
 1,2026-03-04,401828258,Rice Owls,North Texas Mean Green,137,OVER,147.5,156.5,140,141.5,152,146,18.1
-2,2026-03-04,401851239,North Alabama Lions,Florida Gulf Coast Eagles,129,OVER,143.5,135,145.5,135,139,146.5,14.2
+2,2026-03-04,401851239,North Alabama Lions,Florida Gulf Coast Eagles,128.5,OVER,143.5,135,145.5,135,139,146.5,14.7
 3,2026-03-04,401825556,Purdue Boilermakers,Northwestern Wildcats,146,UNDER,141.5,132.5,140.5,153,137,146,10.9
 4,2026-03-04,401830832,Colorado State Rams,New Mexico Lobos,151,UNDER,145.5,140.5,150.5,142.5,143,147.5,10.9
 5,2026-03-04,401825558,USC Trojans,Washington Huskies,151,UNDER,142,144.5,152,140,143.5,148,10.4
@@ -22,8 +22,8 @@ rank,date,game_id,away_team,home_team,market_total,bet,ridge_pred_total,recency_
 21,2026-03-04,401851424,Youngstown State Penguins,Robert Morris Colonials,143,OVER,145.5,147,145.5,144,146,146.5,6.7
 22,2026-03-04,401808273,Texas Longhorns,Arkansas Razorbacks,164,UNDER,159,170,166,142.5,164.5,151,6.3
 23,2026-03-04,401851514,Wagner Seahawks,Central Connecticut Blue Devils,138.5,UNDER,135,135.5,139,136.5,135,146,5.9
-24,2026-03-04,401851515,Fairleigh Dickinson Knights,Mercyhurst Lakers,132,UNDER,131.5,124.5,144.5,136.5,128,147,5.8
-25,2026-03-04,401820782,Stanford Cardinal,Notre Dame Fighting Irish,147,OVER,150.5,150.5,146,139,150.5,148.5,5.7
+24,2026-03-04,401820782,Stanford Cardinal,Notre Dame Fighting Irish,147,OVER,150.5,150.5,146,139,150.5,148.5,5.7
+25,2026-03-04,401851515,Fairleigh Dickinson Knights,Mercyhurst Lakers,132,UNDER,131.5,124.5,144.5,136.5,128,147,5.5
 26,2026-03-04,401851241,Stetson Hatters,Eastern Kentucky Colonels,156,OVER,156,162,150,141,159,151,4.8
 27,2026-03-04,401851524,Little Rock Trojans,Lindenwood Lions,148.5,UNDER,145.5,150.5,144,136.5,148,147.5,4.8
 28,2026-03-04,401827721,Baylor Bears,Houston Cougars,142,OVER,145,142.5,149,139.5,143.5,148.5,4.7
