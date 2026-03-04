@@ -345,6 +345,8 @@ main { padding: 14px; }
   color: var(--text);
   font-feature-settings: "zero" 0;
 }
+.gc-market-val.pred-over { color: #4ade80; }
+.gc-market-val.pred-under { color: #93c5fd; }
 .gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; font-feature-settings: "zero" 0; }
 .gc-pred-val.pred-over { color: #4ade80; }
 .gc-pred-val.pred-under { color: #93c5fd; }
@@ -372,9 +374,8 @@ main { padding: 14px; }
 .gc-models-wrap {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
-  padding-left: 8px;
 }
 .gc-cell {
   padding: 6px 8px;
@@ -780,37 +781,50 @@ function buildCard(r, rank, tabKey) {
     const predRecency = fmt(r.recency_team_pred, 1);
     const predSim     = fmt(r.elo_sim_team_pred, 1);
     modelPredRows = `
-      <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;width:100%;">
-        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">RIDGE</span><span class="gc-market-val ${pc(r.pred_team_total)}">${predRidge}</span></div>
-        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">RECENCY</span><span class="gc-market-val ${pc(r.recency_team_pred)}">${predRecency}</span></div>
-        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">SIM</span><span class="gc-market-val ${pc(r.elo_sim_team_pred)}">${predSim}</span></div>
+      <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">RIDGE</span><span class="gc-market-val ${pc(r.pred_team_total)}">${predRidge}</span></div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">RECENCY</span><span class="gc-market-val ${pc(r.recency_team_pred)}">${predRecency}</span></div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">SIM</span><span class="gc-market-val ${pc(r.elo_sim_team_pred)}">${predSim}</span></div>
       </div>`;
     const diff = parseFloat(r.pred_team_total) - mkt;
     edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
   } else if (tabKey === 'sp') {
     // Strip mascot from market spread string for display
+    // Always show the minus side for market line
     const mktParts = (r.market_spread_str || '—').match(/^(.+?)\s+([+-]?\d+\.?\d*)$/);
-    const mktShort = mktParts ? mktParts[1].split(' ').slice(0,2).join(' ') + ' ' + mktParts[2] : (r.market_spread_str || '—');
-    marketLine = mktShort;
+    if (mktParts) {
+      const mktNum = parseFloat(mktParts[2]);
+      const mktTeamFull = mktParts[1];
+      if (!isNaN(mktNum) && mktNum > 0) {
+        // currently showing plus side — flip to the other team with minus
+        const otherTeam = mktTeamFull.trim() === (r.home_team||'').trim() ? (r.away_team||'') : (r.home_team||'');
+        const shortOther = otherTeam.split(' ').slice(0,2).join(' ');
+        marketLine = shortOther + ' -' + mktNum.toFixed(mktNum % 1 === 0 ? 0 : 1);
+      } else {
+        marketLine = mktTeamFull.split(' ').slice(0,2).join(' ') + ' ' + mktParts[2];
+      }
+    } else {
+      marketLine = r.market_spread_str || '—';
+    }
 
     // Build model spread lines from raw margins
     const mktSpread = parseFloat(r.market_spread_home || r.edge_blend || 0);
     const fmtSpreadLine = (margin, edge) => {
-      if (isNaN(parseFloat(margin))) return '<span class="gc-pred-val">—</span>';
+      if (isNaN(parseFloat(margin))) return '<span class="gc-market-val">—</span>';
       const m = parseFloat(margin);
-      // positive margin = home favored = minus line; negative = away favored = plus line
-      const isMinus = m > 0;
+      const isMinus = m > 0; // positive margin = home favored = minus line
+      const teamFull = isMinus ? (r.home_team||'') : (r.away_team||'');
+      const shortTeam = teamFull.split(' ').slice(0,2).join(' ');
       const absVal = Math.abs(m) % 1 === 0 ? Math.abs(m).toFixed(0) : Math.abs(m).toFixed(1);
-      const lineStr = isMinus ? '-' + absVal : '+' + absVal;
-      // minus=green(pred-over), plus=blue(pred-under)
+      const lineStr = isMinus ? shortTeam + ' -' + absVal : shortTeam + ' +' + absVal;
       const cls = isMinus ? 'pred-over' : 'pred-under';
-      return `<span class="gc-pred-val ${cls}">${lineStr}</span>`;
+      return `<span class="gc-market-val ${cls}">${lineStr}</span>`;
     };
     modelPredRows = `
-      <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;width:100%;">
-        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">M1</span>${fmtSpreadLine(r.pred_margin_04, r.edge_04)}</div>
-        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">M2</span>${fmtSpreadLine(r.pred_margin_09, r.edge_09)}</div>
-        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">M3</span>${fmtSpreadLine(r.pred_margin_10, r.edge_10)}</div>
+      <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M1</span>${fmtSpreadLine(r.pred_margin_04, r.edge_04)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M2</span>${fmtSpreadLine(r.pred_margin_09, r.edge_09)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M3</span>${fmtSpreadLine(r.pred_margin_10, r.edge_10)}</div>
       </div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }
