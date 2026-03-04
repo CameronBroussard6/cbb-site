@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>CTB Analytics — College Basketball Sheet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:        #0d0f12;
@@ -29,7 +29,7 @@
   --warn:      #f59e0b;
   --danger:    #ef4444;
   --gold:      #d4af37;
-  --mono:      'IBM Plex Mono', monospace;
+  --mono:      'DM Mono', monospace;
   --sans:      'IBM Plex Sans', sans-serif;
   --r:         8px;
 }
@@ -348,7 +348,7 @@ main { padding: 14px; }
 .gc-pred-grid {
   display: grid;
   grid-template-columns: repeat(2, max-content);
-  gap: 2px 16px;
+  gap: 2px 12px;
   margin-top: 4px;
   justify-content: center;
 }
@@ -366,7 +366,7 @@ main { padding: 14px; }
   text-align: left;
 }
 .gc-models-wrap {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
@@ -584,7 +584,10 @@ function parseCSV(text) {
 
 function fmt(v, d=1) {
   const n = parseFloat(v);
-  return isNaN(n) ? '—' : n.toFixed(d);
+  if (isNaN(n)) return '—';
+  const s = n.toFixed(d);
+  // strip trailing .0 but keep .5
+  return s.endsWith('.0') ? String(Math.round(n)) : s;
 }
 
 function fmtRec(w, l) { return (w+l===0) ? '—' : `${w}-${l}`; }
