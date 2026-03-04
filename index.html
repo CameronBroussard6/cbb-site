@@ -326,7 +326,7 @@ main { padding: 14px; }
 .gc-market-row {
   display: flex;
   align-items: baseline;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
   margin-bottom: 2px;
 }
@@ -372,8 +372,9 @@ main { padding: 14px; }
 .gc-models-wrap {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
+  padding-left: 8px;
 }
 .gc-cell {
   padding: 6px 8px;
@@ -779,10 +780,10 @@ function buildCard(r, rank, tabKey) {
     const predRecency = fmt(r.recency_team_pred, 1);
     const predSim     = fmt(r.elo_sim_team_pred, 1);
     modelPredRows = `
-      <div style="display:flex;flex-direction:column;gap:2px;align-items:center;">
-        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">RIDGE</span><span class="gc-pred-val ${pc(r.pred_team_total)}">${predRidge}</span></div>
-        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">RECENCY</span><span class="gc-pred-val ${pc(r.recency_team_pred)}">${predRecency}</span></div>
-        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">SIM</span><span class="gc-pred-val ${pc(r.elo_sim_team_pred)}">${predSim}</span></div>
+      <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;width:100%;">
+        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">RIDGE</span><span class="gc-market-val ${pc(r.pred_team_total)}">${predRidge}</span></div>
+        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">RECENCY</span><span class="gc-market-val ${pc(r.recency_team_pred)}">${predRecency}</span></div>
+        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">SIM</span><span class="gc-market-val ${pc(r.elo_sim_team_pred)}">${predSim}</span></div>
       </div>`;
     const diff = parseFloat(r.pred_team_total) - mkt;
     edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
@@ -806,10 +807,10 @@ function buildCard(r, rank, tabKey) {
       return `<span class="gc-pred-val ${cls}">${lineStr}</span>`;
     };
     modelPredRows = `
-      <div style="display:flex;flex-direction:row;gap:10px;justify-content:center;margin-top:2px;">
-        <div class="gc-pred-cell" style="gap:4px;"><span class="gc-pred-lbl">M1</span>${fmtSpreadLine(r.pred_margin_04, r.edge_04)}</div>
-        <div class="gc-pred-cell" style="gap:4px;"><span class="gc-pred-lbl">M2</span>${fmtSpreadLine(r.pred_margin_09, r.edge_09)}</div>
-        <div class="gc-pred-cell" style="gap:4px;"><span class="gc-pred-lbl">M3</span>${fmtSpreadLine(r.pred_margin_10, r.edge_10)}</div>
+      <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;width:100%;">
+        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">M1</span>${fmtSpreadLine(r.pred_margin_04, r.edge_04)}</div>
+        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">M2</span>${fmtSpreadLine(r.pred_margin_09, r.edge_09)}</div>
+        <div class="gc-market-row" style="justify-content:flex-start;gap:6px;"><span class="gc-market-lbl" style="font-size:8px;color:var(--muted2);font-weight:500;">M3</span>${fmtSpreadLine(r.pred_margin_10, r.edge_10)}</div>
       </div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }
