@@ -14,14 +14,14 @@ rank,date,game_id,away_team,home_team,market_total,bet,ridge_pred_total,recency_
 13,2026-03-04,401825555,Minnesota Golden Gophers,Indiana Hoosiers,137,OVER,141,146,128.5,-1,143.5,147,8.3
 14,2026-03-04,401820782,Stanford Cardinal,Notre Dame Fighting Irish,145,OVER,150.5,150.5,146,-3.5,150.5,148.5,8.3
 15,2026-03-04,401825557,Ohio State Buckeyes,Penn State Nittany Lions,153,UNDER,149,148,133.5,3.5,148.5,149.5,7.7
-16,2026-03-04,401851515,Fairleigh Dickinson Knights,Mercyhurst Lakers,133.5,UNDER,131.5,124.5,144.5,-5.5,128,147,7.6
-17,2026-03-04,401851513,Chicago State Cougars,Long Island University Sharks,138,UNDER,132.5,132.5,140,0,132.5,144,7.6
-18,2026-03-04,401851424,Youngstown State Penguins,Robert Morris Colonials,141.5,OVER,145.5,147,145.5,-5,146,146.5,7.6
-19,2026-03-04,401822970,Villanova Wildcats,DePaul Blue Demons,136,OVER,144.5,134,148,14,139.5,146,7.2
+16,2026-03-04,401851513,Chicago State Cougars,Long Island University Sharks,138,UNDER,132.5,132.5,140,0,132.5,144,7.6
+17,2026-03-04,401851424,Youngstown State Penguins,Robert Morris Colonials,141.5,OVER,145.5,147,145.5,-5,146,146.5,7.6
+18,2026-03-04,401822970,Villanova Wildcats,DePaul Blue Demons,136,OVER,144.5,134,148,14,139.5,146,7.2
+19,2026-03-04,401851515,Fairleigh Dickinson Knights,Mercyhurst Lakers,133,UNDER,131.5,124.5,144.5,-5.5,128,147,7.1
 20,2026-03-04,401851428,Northern Kentucky Norse,Oakland Golden Grizzlies,160,UNDER,155,156,160,0.5,155.5,148,6.9
 21,2026-03-04,401828460,St. Bonaventure Bonnies,George Washington Revolutionaries,158,UNDER,151.5,160,144,-7,156,148,6.7
 22,2026-03-04,401851243,North Florida Ospreys,West Georgia Wolves,158,UNDER,154.5,153.5,158.5,-2.5,154,147,6.7
-23,2026-03-04,401808273,Texas Longhorns,Arkansas Razorbacks,164.5,UNDER,159,170,166,-3.5,164.5,151,6.4
+23,2026-03-04,401808273,Texas Longhorns,Arkansas Razorbacks,164,UNDER,159,170,166,-3.5,164.5,151,6.3
 24,2026-03-04,401851514,Wagner Seahawks,Central Connecticut Blue Devils,138.5,UNDER,135,135.5,139,-3.5,135,146,5.9
 25,2026-03-04,401851619,Kansas City Roos,Oral Roberts Golden Eagles,147,OVER,152.5,145,153.5,-4,148.5,146,5
 26,2026-03-04,401820783,Florida State Seminoles,Pittsburgh Panthers,145,UNDER,142,162,142.5,-3.5,152,149,5

@@ -8,12 +8,12 @@ rank,date,game_id,away_team,home_team,market_spread_str,pick,model_spread_str,pr
 7,2026-03-04,401827721,Baylor Bears,Houston Cougars,Houston Cougars -15,Baylor Bears +15,Houston Cougars -8.5,7.5,11.5,7.5,8.5,-7.5,-3.5,-7.5,-6.5,2.8,1.5,0.6,0,6.5,11.5
 8,2026-03-04,401830832,Colorado State Rams,New Mexico Lobos,New Mexico Lobos -9,Colorado State Rams +9,New Mexico Lobos -2.5,1.5,6,1.5,2.5,-7.5,-3,-7.5,-6.5,2.8,1.5,0.6,0,6.5,11.4
 9,2026-03-04,401822969,Creighton Bluejays,Butler Bulldogs,Butler Bulldogs -2.5,Butler Bulldogs -2.5,Butler Bulldogs -9,8.5,10,8.5,9,6,7.5,6,6.5,2.8,1.5,0.6,0,6.5,11.3
-10,2026-03-04,401851426,Milwaukee Panthers,Detroit Mercy Titans,Detroit Mercy Titans -2.5,Detroit Mercy Titans -2.5,Detroit Mercy Titans -8,6.5,14,6.5,8,4,11.5,4,5.5,2.8,1.5,0.6,0,5.5,10.6
-11,2026-03-04,401825558,USC Trojans,Washington Huskies,Washington Huskies -6.5,Washington Huskies -6.5,Washington Huskies -12,13,9.5,13,12,6.5,3,6.5,5.5,2.8,1.5,0.6,0,5.5,10.6
+10,2026-03-04,401825558,USC Trojans,Washington Huskies,Washington Huskies -6,Washington Huskies -6,Washington Huskies -12,13,9.5,13,12,7,3,7,6,2.8,1.5,0.6,0,6,10.8
+11,2026-03-04,401851426,Milwaukee Panthers,Detroit Mercy Titans,Detroit Mercy Titans -2.5,Detroit Mercy Titans -2.5,Detroit Mercy Titans -8,6.5,14,6.5,8,4,11.5,4,5.5,2.8,1.5,0.6,0,5.5,10.6
 12,2026-03-04,401851346,Gardner-Webb Runnin' Bulldogs,South Carolina Upstate Spartans,South Carolina Upstate Spartans -11.5,Gardner-Webb Runnin' Bulldogs +11.5,South Carolina Upstate Spartans -6.5,6,8.5,6,6.5,-5.5,-3,-5.5,-5,2.8,1.5,0.6,0,5,9.8
 13,2026-03-04,401820783,Florida State Seminoles,Pittsburgh Panthers,Pittsburgh Panthers +2.5,Florida State Seminoles -2.5,Florida State Seminoles -10.5,-13,-2,-13,-10.5,-10.5,0.5,-10.5,-8,1,0,0.6,0,8,9.7
-14,2026-03-04,401828461,Loyola Chicago Ramblers,Saint Louis Billikens,Saint Louis Billikens -24.5,Loyola Chicago Ramblers +24.5,Saint Louis Billikens -20,20,19.5,20,20,-4.5,-5,-4.5,-4.5,2.8,1.5,0.6,0,4.5,9.3
-15,2026-03-04,401825559,Maryland Terrapins,Wisconsin Badgers,Wisconsin Badgers -14.5,Wisconsin Badgers -14.5,Wisconsin Badgers -17.5,9.5,41,9.5,17.5,-5,26.5,-5,3,1,0,0,1.9,3,9.3
+14,2026-03-04,401825559,Maryland Terrapins,Wisconsin Badgers,Wisconsin Badgers -14.5,Wisconsin Badgers -14.5,Wisconsin Badgers -17.5,9.5,41,9.5,17.5,-5,26.5,-5,3,1,0,0,1.9,3,9.3
+15,2026-03-04,401828461,Loyola Chicago Ramblers,Saint Louis Billikens,Saint Louis Billikens -24,Loyola Chicago Ramblers +24,Saint Louis Billikens -20,20,19.5,20,20,-4,-4.5,-4,-4,2.8,1.5,0.6,0,4,8.8
 16,2026-03-04,401828256,UAB Blazers,Charlotte 49ers,Charlotte 49ers +1.5,UAB Blazers -1.5,UAB Blazers -7.5,-11,2.5,-11,-7.5,-9.5,4,-9.5,-6,1,0,0.6,0.8,6,8.8
 17,2026-03-04,401851524,Little Rock Trojans,Lindenwood Lions,Lindenwood Lions -2.5,Little Rock Trojans +2.5,Little Rock Trojans -0.5,-6,15,-6,-0.5,-8.5,12.5,-8.5,-3,1,0,0.6,2.5,3,8.5
 18,2026-03-04,401851428,Northern Kentucky Norse,Oakland Golden Grizzlies,Oakland Golden Grizzlies -2.5,Northern Kentucky Norse +2.5,Northern Kentucky Norse -1,0,-4,0,-1,-2.5,-6.5,-2.5,-3.5,2.8,1.5,0.6,0,3.5,8.3
