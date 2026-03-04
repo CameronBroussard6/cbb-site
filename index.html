@@ -840,22 +840,42 @@ function buildCard(r, rank, tabKey) {
 
     // Build model spread lines from raw margins
     const mktSpread = parseFloat(r.market_spread_home || r.edge_blend || 0);
-    const fmtSpreadLine = (margin, edge) => {
+    // Pick direction from pick column: extract line number
+    const pickLineMatch2 = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
+    const pickLineNum2 = pickLineMatch2 ? parseFloat(pickLineMatch2[1]) : NaN;
+    const pickIsMinus = !isNaN(pickLineNum2) && pickLineNum2 < 0; // pick is minus = favorite
+
+    const fmtSpreadLine = (margin) => {
       if (isNaN(parseFloat(margin))) return '<span class="gc-market-val">—</span>';
       const m = parseFloat(margin);
-      const isMinus = m > 0; // positive margin = home favored = minus line
-      const teamFull = isMinus ? (r.home_team||'') : (r.away_team||'');
-      const shortTeam = teamFull.split(' ').slice(0,2).join(' ');
+      // pred_margin is home team margin: positive = home favored, negative = away favored
+      const homeIsFav = m > 0;
+      const favTeam = homeIsFav ? (r.home_team||'') : (r.away_team||'');
+      const dogTeam = homeIsFav ? (r.away_team||'') : (r.home_team||'');
       const absVal = Math.abs(m) % 1 === 0 ? Math.abs(m).toFixed(0) : Math.abs(m).toFixed(1);
-      const lineStr = isMinus ? shortTeam + ' -' + absVal : shortTeam + ' +' + absVal;
-      const cls = isMinus ? 'pred-over' : 'pred-under';
+      // Show from pick team's perspective: if pick is minus (favorite), show fav team -line
+      // if pick is plus (underdog), show dog team +line
+      let dispTeam, lineStr;
+      if (pickIsMinus) {
+        dispTeam = favTeam.split(' ').slice(0,2).join(' ');
+        lineStr = dispTeam + ' -' + absVal;
+      } else {
+        dispTeam = dogTeam.split(' ').slice(0,2).join(' ');
+        lineStr = dispTeam + ' +' + absVal;
+      }
+      // Color: does this model agree with the pick direction?
+      // Pick is minus = betting favorite; model agrees if homeIsFav matches pickHome
+      const pickTeamStr = (r.pick||'').replace(/[+-]?\d+\.?\d*$/, '').trim().toLowerCase();
+      const pickIsHomeM = pickTeamStr.includes((r.home_team||'').split(' ')[0].toLowerCase());
+      const modelAgreesWithPick = (pickIsHomeM && homeIsFav) || (!pickIsHomeM && !homeIsFav);
+      const cls = modelAgreesWithPick ? 'pred-over' : 'pred-under';
       return `<span class="gc-market-val ${cls}">${lineStr}</span>`;
     };
     modelPredRows = `
       <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M1</span>${fmtSpreadLine(r.pred_margin_04, r.edge_04)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M2</span>${fmtSpreadLine(r.pred_margin_09, r.edge_09)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M3</span>${fmtSpreadLine(r.pred_margin_10, r.edge_10)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M1</span>${fmtSpreadLine(r.pred_margin_04)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M2</span>${fmtSpreadLine(r.pred_margin_09)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M3</span>${fmtSpreadLine(r.pred_margin_10)}</div>
       </div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }
