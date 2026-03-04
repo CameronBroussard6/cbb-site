@@ -6,33 +6,33 @@ rank,date,game_id,team_name,homeAway,market_team_total,bet,pred_team_total,recen
 5,2026-03-04,401820780,California Golden Bears,away,79.5,UNDER,67,87,78,7.9
 6,2026-03-04,401828460,George Washington Revolutionaries,home,84,UNDER,75.5,77,74.5,7.7
 7,2026-03-04,401822971,Marquette Golden Eagles,away,79,UNDER,67.5,88.5,72,7.5
-8,2026-03-04,401851346,South Carolina Upstate Spartans,home,79,UNDER,72.5,70.5,76,7.5
+8,2026-03-04,401851346,South Carolina Upstate Spartans,home,79,UNDER,72.5,70.5,76,7.3
 9,2026-03-04,401825555,Minnesota Golden Gophers,away,65,UNDER,56.5,69.5,71.5,6.8
-10,2026-03-04,401825556,Purdue Boilermakers,away,78.5,UNDER,74.5,70.5,77,5.8
-11,2026-03-04,401825557,Penn State Nittany Lions,home,73,UNDER,66.5,68,71.5,5.7
-12,2026-03-04,401820784,Miami Hurricanes,away,79.5,UNDER,72.5,76.5,78,5.5
-13,2026-03-04,401827721,Baylor Bears,away,63.5,OVER,71.5,65.5,71,5.5
-14,2026-03-04,401808273,Arkansas Razorbacks,home,86,OVER,90.5,92,77.5,5.3
-15,2026-03-04,401820780,Georgia Tech Yellow Jackets,home,76,UNDER,70,73,70.5,5.1
-16,2026-03-04,401828258,Rice Owls,away,66,OVER,66,78.5,72,5
-17,2026-03-04,401828457,Davidson Wildcats,home,70.5,OVER,77,55.5,71.5,4.7
-18,2026-03-04,401828457,Saint Joseph's Hawks,away,67,OVER,71.5,62,73,4.6
-19,2026-03-04,401851514,Wagner Seahawks,away,67,OVER,71,61.5,70.5,4.6
-20,2026-03-04,401851424,Youngstown State Penguins,away,68,OVER,71,75.5,71,4.4
-21,2026-03-04,401851515,Mercyhurst Lakers,home,69,OVER,75.5,62.5,75.5,4.4
-22,2026-03-04,401851516,Stonehill Skyhawks,away,64,OVER,71.5,64.5,71,4.4
+10,2026-03-04,401851515,Mercyhurst Lakers,home,68.5,OVER,75.5,62.5,75.5,6.7
+11,2026-03-04,401825556,Purdue Boilermakers,away,78.5,UNDER,74.5,70.5,77,5.8
+12,2026-03-04,401825557,Penn State Nittany Lions,home,73,UNDER,66.5,68,71.5,5.7
+13,2026-03-04,401820784,Miami Hurricanes,away,79.5,UNDER,72.5,76.5,78,5.5
+14,2026-03-04,401827721,Baylor Bears,away,63.5,OVER,71.5,65.5,71,5.5
+15,2026-03-04,401808273,Arkansas Razorbacks,home,86,OVER,90.5,92,77.5,5.3
+16,2026-03-04,401820780,Georgia Tech Yellow Jackets,home,76,UNDER,70,73,70.5,5.1
+17,2026-03-04,401828258,Rice Owls,away,66,OVER,66,78.5,72,5
+18,2026-03-04,401828457,Davidson Wildcats,home,70.5,OVER,77,55.5,71.5,4.7
+19,2026-03-04,401828457,Saint Joseph's Hawks,away,67,OVER,71.5,62,73,4.6
+20,2026-03-04,401851514,Wagner Seahawks,away,67,OVER,71,61.5,70.5,4.6
+21,2026-03-04,401851424,Youngstown State Penguins,away,68,OVER,71,75.5,71,4.4
+22,2026-03-04,401851516,Stonehill Skyhawks,away,64.5,OVER,71.5,64.5,71,4.3
 23,2026-03-04,401851346,Gardner-Webb Runnin' Bulldogs,away,67.5,OVER,74,61,69.5,4.1
 24,2026-03-04,401825558,Washington Huskies,home,78.5,UNDER,76.5,72,72,4
 25,2026-03-04,401822970,DePaul Blue Demons,home,67,UNDER,64,61,69.5,3.9
-26,2026-03-04,401822971,Providence Friars,home,84,UNDER,78,90.5,79.5,3.7
-27,2026-03-04,401828460,St. Bonaventure Bonnies,away,74,UNDER,69,83,73.5,3.7
-28,2026-03-04,401851243,West Georgia Wolves,home,81,UNDER,76.5,77.5,76,3.7
-29,2026-03-04,401820782,Notre Dame Fighting Irish,home,73,OVER,77,76.5,71.5,3.6
+26,2026-03-04,401820782,Notre Dame Fighting Irish,home,73,OVER,77,76.5,71.5,3.7
+27,2026-03-04,401822971,Providence Friars,home,84,UNDER,78,90.5,79.5,3.7
+28,2026-03-04,401828460,St. Bonaventure Bonnies,away,74,UNDER,69,83,73.5,3.7
+29,2026-03-04,401851243,West Georgia Wolves,home,81,UNDER,76.5,77.5,76,3.7
 30,2026-03-04,401822969,Creighton Bluejays,away,76,UNDER,73,72,73.5,3.6
 31,2026-03-04,401825556,Northwestern Wildcats,home,68,UNDER,66,62,69,3.6
-32,2026-03-04,401820783,Pittsburgh Panthers,home,71.5,OVER,72,79.5,71.5,3.5
-33,2026-03-04,401828459,La Salle Explorers,home,64,OVER,69.5,65.5,70,3.5
-34,2026-03-04,401851515,Fairleigh Dickinson Knights,away,64,OVER,68.5,62,71.5,3.5
+32,2026-03-04,401851515,Fairleigh Dickinson Knights,away,64,OVER,68.5,62,71.5,3.6
+33,2026-03-04,401820783,Pittsburgh Panthers,home,71.5,OVER,72,79.5,71.5,3.5
+34,2026-03-04,401828459,La Salle Explorers,home,64,OVER,69.5,65.5,70,3.5
 35,2026-03-04,401825559,Wisconsin Badgers,home,84,UNDER,79,83.5,78.5,3.4
 36,2026-03-04,401851619,Kansas City Roos,away,69,OVER,74,68.5,70.5,3.4
 37,2026-03-04,401851243,North Florida Ospreys,away,77,OVER,82,76,71.5,3.2
@@ -47,29 +47,29 @@ rank,date,game_id,team_name,homeAway,market_team_total,bet,pred_team_total,recen
 46,2026-03-04,401851426,Milwaukee Panthers,away,74.5,OVER,78.5,74,72,2.5
 47,2026-03-04,401851523,SIU Edwardsville Cougars,home,66,UNDER,65.5,71,76,2.5
 48,2026-03-04,401828256,Charlotte 49ers,home,72,UNDER,68.5,80.5,72.5,2.4
-49,2026-03-04,401851513,Long Island University Sharks,home,75,UNDER,73.5,70.5,76.5,2.4
-50,2026-03-04,401851516,Le Moyne Dolphins,home,71,OVER,74.5,70.5,76.5,2.4
-51,2026-03-04,401820783,Florida State Seminoles,away,74,UNDER,70.5,82.5,78,2.3
+49,2026-03-04,401851516,Le Moyne Dolphins,home,70.5,OVER,74.5,70.5,76.5,2.4
+50,2026-03-04,401820783,Florida State Seminoles,away,74,UNDER,70.5,82.5,78,2.3
+51,2026-03-04,401825555,Indiana Hoosiers,home,71.5,OVER,72,76.5,75.5,2.3
 52,2026-03-04,401828258,North Texas Mean Green,home,73.5,OVER,74,78,74.5,2.3
 53,2026-03-04,401830832,Colorado State Rams,away,70.5,OVER,72,67,71.5,2.3
-54,2026-03-04,401851513,Chicago State Cougars,away,63,OVER,66,62,67.5,2.3
-55,2026-03-04,401851524,Lindenwood Lions,home,75.5,UNDER,73.5,78,76,2.3
-56,2026-03-04,401820784,SMU Mustangs,home,81,UNDER,78,80,72.5,2.2
-57,2026-03-04,401851426,Detroit Mercy Titans,home,77,OVER,80.5,77.5,77,2.1
-58,2026-03-04,401825555,Indiana Hoosiers,home,72,OVER,72,76.5,75.5,2
+54,2026-03-04,401851513,Long Island University Sharks,home,75,UNDER,73.5,70.5,76.5,2.3
+55,2026-03-04,401851513,Chicago State Cougars,away,63,OVER,66,62,67.5,2.3
+56,2026-03-04,401851524,Lindenwood Lions,home,75.5,UNDER,73.5,78,76,2.3
+57,2026-03-04,401820784,SMU Mustangs,home,81,UNDER,78,80,72.5,2.2
+58,2026-03-04,401851426,Detroit Mercy Titans,home,77,OVER,80.5,77.5,77,2.1
 59,2026-03-04,401825558,USC Trojans,away,72.5,OVER,75.5,72.5,76,2
 60,2026-03-04,401825559,Maryland Terrapins,away,70,UNDER,69,66,68,2
 61,2026-03-04,401828256,UAB Blazers,away,73,OVER,73.5,78,75,2
 62,2026-03-04,401828458,Duquesne Dukes,away,70.5,UNDER,68.5,72.5,75,1.9
-63,2026-03-04,401808273,Texas Longhorns,away,78.5,UNDER,75.5,78.5,73.5,1.8
-64,2026-03-04,401851428,Northern Kentucky Norse,away,78.5,UNDER,78,75.5,75,1.7
-65,2026-03-04,401851524,Little Rock Trojans,away,73,UNDER,70.5,72.5,72,1.7
-66,2026-03-04,401828459,Fordham Rams,away,67,OVER,68.5,65,75,1.6
-67,2026-03-04,401851239,Florida Gulf Coast Eagles,home,74,OVER,77,74,75,1.6
-68,2026-03-04,401851424,Robert Morris Colonials,home,73,OVER,75,71.5,75.5,1.6
+63,2026-03-04,401851428,Northern Kentucky Norse,away,78.5,UNDER,78,75.5,75,1.7
+64,2026-03-04,401851524,Little Rock Trojans,away,73,UNDER,70.5,72.5,72,1.7
+65,2026-03-04,401828459,Fordham Rams,away,67,OVER,68.5,65,75,1.6
+66,2026-03-04,401851239,Florida Gulf Coast Eagles,home,74.5,OVER,77,74,75,1.6
+67,2026-03-04,401851424,Robert Morris Colonials,home,73,OVER,75,71.5,75.5,1.6
+68,2026-03-04,401808273,Texas Longhorns,away,78,UNDER,75.5,78.5,73.5,1.5
 69,2026-03-04,401851619,Oral Roberts Golden Eagles,home,78,OVER,79.5,77,75.5,1.4
 70,2026-03-04,401827721,Houston Cougars,home,78.5,UNDER,77.5,77,77.5,1.2
 71,2026-03-04,401851523,Eastern Illinois Panthers,away,61,UNDER,59.5,61.5,70.5,1.1
-72,2026-03-04,401851239,North Alabama Lions,away,68,OVER,68.5,61,71,0.9
+72,2026-03-04,401851239,North Alabama Lions,away,67.5,OVER,68.5,61,71,1
 73,2026-03-04,401851238,Jacksonville Dolphins,away,72,UNDER,72,73,74,0.6
 74,2026-03-04,401851428,Oakland Golden Grizzlies,home,81,OVER,82,81,73,0.6

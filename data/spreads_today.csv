@@ -21,21 +21,21 @@ rank,date,game_id,away_team,home_team,market_spread_str,pick,model_spread_str,pr
 20,2026-03-04,401851513,Chicago State Cougars,Long Island University Sharks,Long Island University Sharks -12,Long Island University Sharks -12,Long Island University Sharks -13,7,31,7,13,-5,19,-5,1,1,0,0,1.9,1,7.5
 21,2026-03-04,401851523,Eastern Illinois Panthers,SIU Edwardsville Cougars,SIU Edwardsville Cougars -5.5,Eastern Illinois Panthers +5.5,SIU Edwardsville Cougars -4,-1,19,-1,4,-6.5,13.5,-6.5,-1.5,1,0,0.6,2.5,1.5,7.2
 22,2026-03-04,401851243,North Florida Ospreys,West Georgia Wolves,West Georgia Wolves -3.5,West Georgia Wolves -3.5,West Georgia Wolves -6,6,5,6,6,2.5,1.5,2.5,2.5,2.8,1.5,0.6,0,2.5,7.2
-23,2026-03-04,401808273,Texas Longhorns,Arkansas Razorbacks,Arkansas Razorbacks -7,Arkansas Razorbacks -7,Arkansas Razorbacks -12,14,5.5,14,12,7,-1.5,7,4.5,1,0,0.6,0,4.5,7.1
+23,2026-03-04,401808273,Texas Longhorns,Arkansas Razorbacks,Arkansas Razorbacks -7.5,Arkansas Razorbacks -7.5,Arkansas Razorbacks -12,14,5.5,14,12,6.5,-2,6.5,4.5,1,0,0.6,0,4.5,7
 24,2026-03-04,401828458,Duquesne Dukes,Rhode Island Rams,Rhode Island Rams -1,Duquesne Dukes +1,Duquesne Dukes -1,-0.5,-1.5,-0.5,-1,-1.5,-2.5,-1.5,-2,2.8,1.5,0.6,0,2,6.7
-25,2026-03-04,401851239,North Alabama Lions,Florida Gulf Coast Eagles,Florida Gulf Coast Eagles -6.5,Florida Gulf Coast Eagles -6.5,Florida Gulf Coast Eagles -8,8,9,8,8,1.5,2.5,1.5,1.5,2.8,1.5,0.6,0,1.5,6.6
-26,2026-03-04,401820784,Miami Hurricanes,SMU Mustangs,SMU Mustangs -1.5,Miami Hurricanes +1.5,Miami Hurricanes 0,1,-4,1,-0,-0.5,-5.5,-0.5,-1.5,2.8,1.5,0.6,0,1.5,6.5
+25,2026-03-04,401820784,Miami Hurricanes,SMU Mustangs,SMU Mustangs -1.5,Miami Hurricanes +1.5,Miami Hurricanes 0,1,-4,1,-0,-0.5,-5.5,-0.5,-1.5,2.8,1.5,0.6,0,1.5,6.5
+26,2026-03-04,401851239,North Alabama Lions,Florida Gulf Coast Eagles,Florida Gulf Coast Eagles -7,Florida Gulf Coast Eagles -7,Florida Gulf Coast Eagles -8,8,9,8,8,1,2,1,1,2.8,1.5,0.6,0,1,6.1
 27,2026-03-04,401851241,Stetson Hatters,Eastern Kentucky Colonels,Eastern Kentucky Colonels -4.5,Eastern Kentucky Colonels -4.5,Eastern Kentucky Colonels -7.5,3,20.5,3,7.5,-1.5,16,-1.5,3,1,0,0,0,3,5.9
-28,2026-03-04,401851238,Jacksonville Dolphins,Bellarmine Knights,Bellarmine Knights -1.5,Bellarmine Knights -1.5,Bellarmine Knights -2,-1.5,11.5,-1.5,2,-3,10,-3,0.5,1,0,0,0,0.5,5.6
-29,2026-03-04,401825557,Ohio State Buckeyes,Penn State Nittany Lions,Penn State Nittany Lions +7.5,Ohio State Buckeyes -7.5,Ohio State Buckeyes -10.5,-12.5,-6,-12.5,-10.5,-5,1.5,-5,-3,1,0,0.6,0,3,5.6
-30,2026-03-04,401828459,Fordham Rams,La Salle Explorers,La Salle Explorers +2.5,Fordham Rams -2.5,Fordham Rams -3,-3,-3,-3,-3,-0.5,-0.5,-0.5,-0.5,2.8,1.5,0.6,0,0.5,5.3
-31,2026-03-04,401822971,Marquette Golden Eagles,Providence Friars,Providence Friars -4.5,Marquette Golden Eagles +4.5,Providence Friars -3.5,0.5,12,0.5,3.5,-4,7.5,-4,-1,1,0,0.6,1.5,1,4.9
-32,2026-03-04,401851516,Stonehill Skyhawks,Le Moyne Dolphins,Le Moyne Dolphins -6.5,Le Moyne Dolphins -6.5,Le Moyne Dolphins -8.5,9.5,5.5,9.5,8.5,3,-1,3,2,1,0,0.6,0,2,4.1
-33,2026-03-04,401822970,Villanova Wildcats,DePaul Blue Demons,DePaul Blue Demons +2.5,DePaul Blue Demons +2.5,Villanova Wildcats -1,-0,-4,-0,-1,2.5,-1.5,2.5,1.5,1,0,0.6,0,1.5,3.8
-34,2026-03-04,401828460,St. Bonaventure Bonnies,George Washington Revolutionaries,George Washington Revolutionaries -9.5,George Washington Revolutionaries -9.5,George Washington Revolutionaries -10,11,8,11,10,1.5,-1.5,1.5,0.5,1,0,0.6,0,0.5,3
-35,2026-03-04,401825556,Purdue Boilermakers,Northwestern Wildcats,Northwestern Wildcats +10.5,Northwestern Wildcats +10.5,Purdue Boilermakers -10,-11,-5.5,-11,-10,-0.5,5,-0.5,0.5,1,0,0,0,0.5,2.8
-36,2026-03-04,401828258,Rice Owls,North Texas Mean Green,North Texas Mean Green -7.5,North Texas Mean Green -7.5,North Texas Mean Green -8.5,8.5,7,8.5,8.5,1,-0.5,1,1,1,0,0.6,0,1,2.6
-37,2026-03-04,401820782,Stanford Cardinal,Notre Dame Fighting Irish,Notre Dame Fighting Irish -1,Notre Dame Fighting Irish -1,Notre Dame Fighting Irish -2,1,4.5,1,2,-0,3.5,-0,1,1,0,0,0,1,1.8
+28,2026-03-04,401820782,Stanford Cardinal,Notre Dame Fighting Irish,Notre Dame Fighting Irish -1,Notre Dame Fighting Irish -1,Notre Dame Fighting Irish -2,1,4.5,1,2,0,3.5,0,1,2.8,1.5,0.6,0,1,5.9
+29,2026-03-04,401851238,Jacksonville Dolphins,Bellarmine Knights,Bellarmine Knights -1.5,Bellarmine Knights -1.5,Bellarmine Knights -2,-1.5,11.5,-1.5,2,-3,10,-3,0.5,1,0,0,0,0.5,5.6
+30,2026-03-04,401825557,Ohio State Buckeyes,Penn State Nittany Lions,Penn State Nittany Lions +7.5,Ohio State Buckeyes -7.5,Ohio State Buckeyes -10.5,-12.5,-6,-12.5,-10.5,-5,1.5,-5,-3,1,0,0.6,0,3,5.6
+31,2026-03-04,401828459,Fordham Rams,La Salle Explorers,La Salle Explorers +2.5,Fordham Rams -2.5,Fordham Rams -3,-3,-3,-3,-3,-0.5,-0.5,-0.5,-0.5,2.8,1.5,0.6,0,0.5,5.3
+32,2026-03-04,401822971,Marquette Golden Eagles,Providence Friars,Providence Friars -4.5,Marquette Golden Eagles +4.5,Providence Friars -3.5,0.5,12,0.5,3.5,-4,7.5,-4,-1,1,0,0.6,1.5,1,4.9
+33,2026-03-04,401851516,Stonehill Skyhawks,Le Moyne Dolphins,Le Moyne Dolphins -6,Le Moyne Dolphins -6,Le Moyne Dolphins -8.5,9.5,5.5,9.5,8.5,3.5,-0.5,3.5,2.5,1,0,0.6,0,2.5,4.2
+34,2026-03-04,401822970,Villanova Wildcats,DePaul Blue Demons,DePaul Blue Demons +2.5,DePaul Blue Demons +2.5,Villanova Wildcats -1,-0,-4,-0,-1,2.5,-1.5,2.5,1.5,1,0,0.6,0,1.5,3.8
+35,2026-03-04,401828460,St. Bonaventure Bonnies,George Washington Revolutionaries,George Washington Revolutionaries -9.5,George Washington Revolutionaries -9.5,George Washington Revolutionaries -10,11,8,11,10,1.5,-1.5,1.5,0.5,1,0,0.6,0,0.5,3
+36,2026-03-04,401825556,Purdue Boilermakers,Northwestern Wildcats,Northwestern Wildcats +10.5,Northwestern Wildcats +10.5,Purdue Boilermakers -10,-11,-5.5,-11,-10,-0.5,5,-0.5,0.5,1,0,0,0,0.5,2.8
+37,2026-03-04,401828258,Rice Owls,North Texas Mean Green,North Texas Mean Green -7.5,North Texas Mean Green -7.5,North Texas Mean Green -8.5,8.5,7,8.5,8.5,1,-0.5,1,1,1,0,0.6,0,1,2.6
 38,2026-03-04,401851636,TBD,James Madison Dukes,James Madison Dukes NANA,NA NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA
 39,2026-03-04,401851423,TBD,Wright State Raiders,Wright State Raiders NANA,NA NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA
 40,2026-03-04,401851637,TBD,Georgia Southern Eagles,Georgia Southern Eagles NANA,NA NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA
