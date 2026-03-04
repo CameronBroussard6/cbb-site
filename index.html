@@ -293,18 +293,18 @@ main { padding: 14px; }
 /* Body: 2-column layout - scores left, models right */
 .gc-body {
   display: grid;
-  grid-template-columns: 80px 1fr;
+  grid-template-columns: 80px auto;
   gap: 0;
+  justify-content: start;
 }
 
 /* Model predictions mini table */
 .gc-mkt-row, .gc-pred-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-top: 3px;
-  width: 100%;
 }
 .gc-mkt-lbl, .gc-pred-lbl {
   font-family: var(--mono);
@@ -313,6 +313,7 @@ main { padding: 14px; }
   text-transform: uppercase;
   letter-spacing: 0.05em;
   white-space: nowrap;
+  min-width: 68px;
 }
 .gc-mkt-val {
   font-family: var(--mono);
