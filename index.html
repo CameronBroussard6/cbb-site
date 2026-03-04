@@ -211,14 +211,14 @@ main { padding: 14px; }
   white-space: nowrap;
 }
 .b-over {
-  background: var(--blue-bg);
-  color: #93c5fd;
-  border: 1px solid #1d4ed8;
+  background: #14532d;
+  color: #4ade80;
+  border: 1px solid #166534;
 }
 .b-under {
-  background: #1a0a0a;
-  color: #fca5a5;
-  border: 1px solid #7f1d1d;
+  background: #1e3a5f;
+  color: #93c5fd;
+  border: 1px solid #1d4ed8;
 }
 .b-home {
   background: var(--accent-bg);
@@ -319,12 +319,9 @@ main { padding: 14px; }
   font-weight: 600;
   color: var(--text);
 }
-.gc-pred-val {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  color: #93c5fd;
-}
+.gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; }
+.gc-pred-val.pred-over { color: #4ade80; }
+.gc-pred-val.pred-under { color: #93c5fd; }
 .gc-cell {
   padding: 8px 10px;
   border-right: 1px solid var(--border);
@@ -695,24 +692,28 @@ function buildCard(r, rank, tabKey) {
 
   if (tabKey === 'gt') {
     marketLine = fmt(r.market_total, 1);
-    const ridge      = fmt(r.ridge_pred_total, 1);
-    const recency    = fmt(r.recency_pred_total, 1);
-    const teamFoc    = fmt(r.from_team_pred_total, 1);
-    const ensemble   = fmt(r.ensemble_pred_total, 1);
-    const eloSim     = fmt(r.elo_sim_pred_total, 1);
+    const mkt = parseFloat(r.market_total);
+    const pc = v => { const n = parseFloat(v); return isNaN(n)||isNaN(mkt) ? '' : n >= mkt ? 'pred-over' : 'pred-under'; };
+    const ridge    = fmt(r.ridge_pred_total, 1);
+    const recency  = fmt(r.recency_pred_total, 1);
+    const teamFoc  = fmt(r.from_team_pred_total, 1);
+    const ensemble = fmt(r.ensemble_pred_total, 1);
+    const eloSim   = fmt(r.elo_sim_pred_total, 1);
     modelPredRows = `
-      <div class="gc-pred-row"><span class="gc-pred-lbl">Ridge</span><span class="gc-pred-val">${ridge}</span></div>
-      <div class="gc-pred-row"><span class="gc-pred-lbl">Recency</span><span class="gc-pred-val">${recency}</span></div>
-      <div class="gc-pred-row"><span class="gc-pred-lbl">Team Focused</span><span class="gc-pred-val">${teamFoc}</span></div>
-      <div class="gc-pred-row"><span class="gc-pred-lbl">Ensemble</span><span class="gc-pred-val">${ensemble}</span></div>
-      <div class="gc-pred-row"><span class="gc-pred-lbl">ELO</span><span class="gc-pred-val">${eloSim}</span></div>`;
-    const diff = parseFloat(r.ensemble_pred_total) - parseFloat(r.market_total);
+      <div class="gc-pred-row"><span class="gc-pred-lbl">Ridge</span><span class="gc-pred-val ${pc(r.ridge_pred_total)}">${ridge}</span></div>
+      <div class="gc-pred-row"><span class="gc-pred-lbl">Recency</span><span class="gc-pred-val ${pc(r.recency_pred_total)}">${recency}</span></div>
+      <div class="gc-pred-row"><span class="gc-pred-lbl">Team Focused</span><span class="gc-pred-val ${pc(r.from_team_pred_total)}">${teamFoc}</span></div>
+      <div class="gc-pred-row"><span class="gc-pred-lbl">Ensemble</span><span class="gc-pred-val ${pc(r.ensemble_pred_total)}">${ensemble}</span></div>
+      <div class="gc-pred-row"><span class="gc-pred-lbl">ELO</span><span class="gc-pred-val ${pc(r.elo_sim_pred_total)}">${eloSim}</span></div>`;
+    const diff = parseFloat(r.ensemble_pred_total) - mkt;
     edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
   } else if (tabKey === 'tt') {
     marketLine = fmt(r.market_team_total, 1);
+    const mkt = parseFloat(r.market_team_total);
+    const pc = v => { const n = parseFloat(v); return isNaN(n)||isNaN(mkt) ? '' : n >= mkt ? 'pred-over' : 'pred-under'; };
     const pred = fmt(r.pred_team_total, 1);
-    modelPredRows = `<div class="gc-pred-row"><span class="gc-pred-lbl">Model</span><span class="gc-pred-val">${pred}</span></div>`;
-    const diff = parseFloat(r.pred_team_total) - parseFloat(r.market_team_total);
+    modelPredRows = `<div class="gc-pred-row"><span class="gc-pred-lbl">Model</span><span class="gc-pred-val ${pc(r.pred_team_total)}">${pred}</span></div>`;
+    const diff = parseFloat(r.pred_team_total) - mkt;
     edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
   } else if (tabKey === 'sp') {
     marketLine = r.market_spread_str || '—';
@@ -740,10 +741,6 @@ function buildCard(r, rank, tabKey) {
         <div class="gc-cell-label" style="margin-bottom:2px;">AG Score</div>
         <div class="gc-cell-value es" style="${agScoreStyle(ag)}">${agScoreDisplay(ag)}</div>
         <div class="ag-bar"><div class="ag-bar-track"><div class="ag-bar-fill" style="width:${agPct}%"></div></div></div>
-      </div>
-      <div style="margin-top:8px;">
-        <div class="gc-cell-label" style="margin-bottom:2px;">Edge</div>
-        <div class="gc-cell-value ${edgePtClass}" style="font-size:14px;">${edgePts}</div>
       </div>
     </div>
     <div class="gc-cell gc-cell-wide">
