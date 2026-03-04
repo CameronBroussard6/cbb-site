@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>CTB Analytics — College Basketball Sheet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:        #0d0f12;
@@ -29,8 +29,7 @@
   --warn:      #f59e0b;
   --danger:    #ef4444;
   --gold:      #d4af37;
-  --mono:      'Roboto Mono', monospace;
-  --mono-settings: 'zero' 0;
+  --mono:      'IBM Plex Mono', monospace;
   --sans:      'IBM Plex Sans', sans-serif;
   --r:         8px;
 }
@@ -238,11 +237,11 @@ main { padding: 14px; }
 }
 .badge-arrow { font-size: 13px; font-weight: 700; line-height: 1; padding-top: 1px; }
 .badge-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
-.badge-main { font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: #ffffff; }
+.badge-main { font-size: 10px; font-weight: 700; letter-spacing: 0.02em; }
 .badge-sub  { font-size: 8px; opacity: 0.85; line-height: 1; }
 
 /* ── SCORE STYLES ── */
-.es { font-family: var(--mono); font-size: 13px; font-weight: 600; font-feature-settings: "zero" 0; }
+.es { font-family: var(--mono); font-size: 13px; font-weight: 600; }
 .ep { color: var(--blue); }
 .en { color: #f87171; }
 
@@ -287,7 +286,7 @@ main { padding: 14px; }
   color: var(--text);
   line-height: 1.3;
 }
-.gc-teams .away { color: #ffffff; font-weight: 500; display: block; }
+.gc-teams .away { color: var(--muted); font-weight: 500; display: block; }
 .gc-teams .home-team { display: block; }
 .gc-teams .vs   { color: var(--muted2); font-size: 9px; display: block; line-height: 1; margin: 1px 0; }
 
@@ -313,7 +312,7 @@ main { padding: 14px; }
   text-transform: uppercase;
   letter-spacing: 0.05em;
   white-space: nowrap;
-  min-width: 0;
+  min-width: 72px;
   text-align: left;
 }
 .gc-mkt-val {
@@ -321,69 +320,17 @@ main { padding: 14px; }
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
-  font-feature-settings: "zero" 0;
 }
-.gc-market-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
-  gap: 6px;
-  margin-bottom: 2px;
-}
-.gc-market-lbl {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.gc-market-val {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text);
-  font-feature-settings: "zero" 0;
-}
-.gc-market-val.pred-over { color: #4ade80; }
-.gc-market-val.pred-under { color: #93c5fd; }
-.gc-market-val.sp-agree { color: #4ade80; }
-.gc-market-val.sp-disagree { color: #ef4444; }
-.b-spread { background: #7c3500; border: 1px solid var(--warn); }
-.gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; font-feature-settings: "zero" 0; }
+.gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; }
 .gc-pred-val.pred-over { color: #4ade80; }
 .gc-pred-val.pred-under { color: #93c5fd; }
-.gc-pred-val.sp-agree { color: #4ade80; }
-.gc-pred-val.sp-disagree { color: #ef4444; }
-.gc-pred-grid {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
-  gap: 2px 12px;
-  margin-top: 4px;
-  justify-content: start;
-  margin-left: -10px;
-}
-.gc-pred-cell {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.gc-pred-cell .gc-pred-lbl {
-  width: 52px;
-  text-align: right;
-}
-.gc-pred-cell .gc-pred-val {
-  width: 32px;
-  text-align: left;
-}
 .gc-models-wrap {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
-  align-items: center;
-  width: 100%;
+  align-items: stretch;
 }
 .gc-cell {
-  padding: 6px 8px;
+  padding: 8px 10px;
   border-right: 1px solid var(--border);
   min-width: 0;
 }
@@ -519,9 +466,10 @@ const TABS = {
   sp: { label: 'Spreads',      file: 'spreads_today',      histFile: 'spreads_history'     },
 };
 
+// Model prediction columns per tab (xgb_elo_pred_total excluded — outputs delta not total)
 const MODEL_COLS = {
-  gt: ['ridge_pred_total', 'recency_pred_total', 'from_team_pred_total', 'ensemble_pred_total', 'elo_sim_pred_total', 'xgb_elo_pred_total'],
-  tt: ['pred_team_total', 'recency_team_pred', 'elo_sim_team_pred'],
+  gt: ['ridge_pred_total', 'recency_pred_total', 'from_team_pred_total', 'ensemble_pred_total', 'elo_sim_pred_total'],
+  tt: ['pred_team_total'],
   sp: ['model_spread_str'],
 };
 
@@ -595,10 +543,7 @@ function parseCSV(text) {
 
 function fmt(v, d=1) {
   const n = parseFloat(v);
-  if (isNaN(n)) return '—';
-  const s = n.toFixed(d);
-  // strip trailing .0 but keep .5
-  return s.endsWith('.0') ? String(Math.round(n)) : s;
+  return isNaN(n) ? '—' : n.toFixed(d);
 }
 
 function fmtRec(w, l) { return (w+l===0) ? '—' : `${w}-${l}`; }
@@ -628,17 +573,10 @@ function computeAGScore(row, tabKey) {
       if (predSide === bet) agrees++;
     });
   } else if (tabKey === 'sp') {
-    // Pick direction: positive edge_blend = home favored by model
-    const blendMargin = parseFloat(row.pred_margin_blend || 0);
-    const pickIsHome = blendMargin > 0;
-    const margins = [row.pred_margin_04, row.pred_margin_09, row.pred_margin_10];
-    margins.forEach(m => {
-      const v = parseFloat(m);
-      if (isNaN(v)) return;
-      total++;
-      const modelPicksHome = v > 0;
-      if (modelPicksHome === pickIsHome) agrees++;
-    });
+    // For spreads, use edge_pts as proxy — if positive, models lean to pick
+    // If only one spread model, AG is just 0 or 1
+    const edge = parseFloat(row.edge_pts || 0);
+    return isNaN(edge) ? null : Math.min(1, Math.abs(edge) / 10);
   }
 
   return total === 0 ? null : agrees / total;
@@ -675,24 +613,18 @@ function betBadge(row, tabKey) {
 
   if (tabKey === 'gt' || tabKey === 'tt') {
     const line = fmt(row.market_total || row.market_team_total, 1);
-    if (raw === 'OVER') return `<span class="badge b-spread"><span class="badge-arrow">↑</span><span class="badge-copy"><span class="badge-main"><strong>Over</strong> ${line}</span></span></span>`;
-    if (raw === 'UNDER') return `<span class="badge b-spread"><span class="badge-arrow">↓</span><span class="badge-copy"><span class="badge-main"><strong>Under</strong> ${line}</span></span></span>`;
+    if (raw === 'OVER') return `<span class="badge b-over"><span class="badge-arrow">↑</span><span class="badge-copy"><span class="badge-main">Over ${line}</span></span></span>`;
+    if (raw === 'UNDER') return `<span class="badge b-under"><span class="badge-arrow">↓</span><span class="badge-copy"><span class="badge-main">Under ${line}</span></span></span>`;
   }
 
   if (tabKey === 'sp') {
-    const pick = row.pick || row.bet || '';
-    // Extract spread number from end e.g. "Mercyhurst Lakers -4.5" -> -4.5
-    const spreadMatch = pick.match(/([+-]?\d+\.?\d*)$/);
-    const spreadNum = spreadMatch ? parseFloat(spreadMatch[1]) : NaN;
-    // minus = green (favorite = b-over), plus = blue (underdog = b-under)
-    const isMinus = !isNaN(spreadNum) && spreadNum < 0;
-    const cls = isMinus ? 'b-over' : 'b-under';
-    const teamWords = pick.replace(/[+-]?\d+\.?\d*$/, '').trim().split(' ');
-    const shortTeam = teamWords.slice(0, 2).join(' ').trim();
-    // Format line cleanly — no double sign
-    const absNum = isNaN(spreadNum) ? '' : Math.abs(spreadNum) % 1 === 0 ? Math.abs(spreadNum).toFixed(0) : Math.abs(spreadNum).toFixed(1);
-    const lineStr = isNaN(spreadNum) ? pick : (isMinus ? '-' : '+') + absNum;
-    return `<span class="badge b-spread"><span class="badge-copy"><span class="badge-main">${shortTeam} ${lineStr}</span></span></span>`;
+    const mkt = row.market_spread_str || '—';
+    if (raw && raw !== '') {
+      const isHome = raw === (row.home_team||'').toUpperCase() || raw.includes('HOME');
+      const cls = isHome ? 'b-home' : 'b-away';
+      const arrow = isHome ? '⌂' : '✈';
+      return `<span class="badge ${cls}"><span class="badge-arrow">${arrow}</span><span class="badge-copy"><span class="badge-main">${row.pick || row.bet}</span><span class="badge-sub">${mkt}</span></span></span>`;
+    }
   }
 
   return `<span class="badge b-pass">PASS</span>`;
@@ -756,29 +688,8 @@ function buildCard(r, rank, tabKey) {
   // Matchup line
   const away = r.away_team || '?';
   const home = r.home_team || r.team_name || '?';
-
-  // For spreads: derive per-team lines directly from pick column
-  let spAwayLine = '', spHomeLine = '';
-  if (tabKey === 'sp') {
-    const pickLineRaw = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
-    if (pickLineRaw) {
-      const pickNum = parseFloat(pickLineRaw[1]);
-      const absP = Math.abs(pickNum);
-      const absStr = absP % 1 === 0 ? absP.toFixed(0) : absP.toFixed(1);
-      const pickLineStr = (pickNum < 0 ? '-' : '+') + absStr;
-      const otherLineStr = (pickNum < 0 ? '+' : '-') + absStr;
-      // which team is the pick?
-      const pickStr = (r.pick||'').replace(/[+-]?\d+\.?\d*$/, '').trim().toLowerCase();
-      const pickIsHomeH = pickStr.includes(home.split(' ')[0].toLowerCase());
-      spHomeLine = pickIsHomeH ? pickLineStr : otherLineStr;
-      spAwayLine = pickIsHomeH ? otherLineStr : pickLineStr;
-    }
-  }
-  const haStr = r.homeAway==='home' ? 'Home' : 'Away';
   const matchup = tabKey === 'tt'
-    ? `<span class="away">${home} <span style="font-size:9px;font-weight:400;color:var(--muted);">(${haStr})</span></span>`
-    : tabKey === 'sp'
-    ? `<span class="away">${away} <span style="font-size:9px;color:var(--warn);">${spAwayLine}</span></span><span class="vs">@</span><span class="home-team">${home} <span style="font-size:9px;color:var(--warn);">${spHomeLine}</span></span>`
+    ? `<span class="away">${home}</span><span class="vs">${r.homeAway==='home'?'(H)':'(A)'}</span>`
     : `<span class="away">${away}</span><span class="vs">@</span><span class="home-team">${home}</span>`;
 
   // Market + model lines
@@ -788,119 +699,32 @@ function buildCard(r, rank, tabKey) {
   if (tabKey === 'gt') {
     marketLine = fmt(r.market_total, 1);
     const mkt = parseFloat(r.market_total);
-    const betIsOver = (r.bet||'').toUpperCase() === 'OVER';
-    const pc = v => {
-      const n = parseFloat(v);
-      if (isNaN(n)||isNaN(mkt)) return '';
-      const modelOver = n >= mkt;
-      return (modelOver === betIsOver) ? 'sp-agree' : 'sp-disagree';
-    };
+    const pc = v => { const n = parseFloat(v); return isNaN(n)||isNaN(mkt) ? '' : n >= mkt ? 'pred-over' : 'pred-under'; };
     const ridge    = fmt(r.ridge_pred_total, 1);
     const recency  = fmt(r.recency_pred_total, 1);
     const teamFoc  = fmt(r.from_team_pred_total, 1);
     const ensemble = fmt(r.ensemble_pred_total, 1);
     const eloSim   = fmt(r.elo_sim_pred_total, 1);
-    const xgbElo   = fmt(r.xgb_elo_pred_total, 1);
     modelPredRows = `
-      <div class="gc-pred-grid">
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">RIDGE</span><span class="gc-pred-val ${pc(r.ridge_pred_total)}">${ridge}</span></div>
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">RECENCY</span><span class="gc-pred-val ${pc(r.recency_pred_total)}">${recency}</span></div>
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">TEAM</span><span class="gc-pred-val ${pc(r.from_team_pred_total)}">${teamFoc}</span></div>
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">ENSEMBLE</span><span class="gc-pred-val ${pc(r.ensemble_pred_total)}">${ensemble}</span></div>
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">SIM</span><span class="gc-pred-val ${pc(r.elo_sim_pred_total)}">${eloSim}</span></div>
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">XGB</span><span class="gc-pred-val ${pc(r.xgb_elo_pred_total)}">${xgbElo}</span></div>
-      </div>`;
+      <div class="gc-pred-row"><span class="gc-pred-lbl">Ridge</span><span class="gc-pred-val ${pc(r.ridge_pred_total)}">${ridge}</span></div>
+      <div class="gc-pred-row"><span class="gc-pred-lbl">Recency</span><span class="gc-pred-val ${pc(r.recency_pred_total)}">${recency}</span></div>
+      <div class="gc-pred-row"><span class="gc-pred-lbl">Team Focused</span><span class="gc-pred-val ${pc(r.from_team_pred_total)}">${teamFoc}</span></div>
+      <div class="gc-pred-row"><span class="gc-pred-lbl">Ensemble</span><span class="gc-pred-val ${pc(r.ensemble_pred_total)}">${ensemble}</span></div>
+      <div class="gc-pred-row"><span class="gc-pred-lbl">ELO</span><span class="gc-pred-val ${pc(r.elo_sim_pred_total)}">${eloSim}</span></div>`;
     const diff = parseFloat(r.ensemble_pred_total) - mkt;
     edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
   } else if (tabKey === 'tt') {
     marketLine = fmt(r.market_team_total, 1);
     const mkt = parseFloat(r.market_team_total);
-    const betIsOverTT = (r.bet||'').toUpperCase() === 'OVER';
-    const pc = v => {
-      const n = parseFloat(v);
-      if (isNaN(n)||isNaN(mkt)) return '';
-      const modelOver = n >= mkt;
-      return (modelOver === betIsOverTT) ? 'sp-agree' : 'sp-disagree';
-    };
-    const predRidge   = fmt(r.pred_team_total, 1);
-    const predRecency = fmt(r.recency_team_pred, 1);
-    const predSim     = fmt(r.elo_sim_team_pred, 1);
-    modelPredRows = `
-      <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">RIDGE</span><span class="gc-market-val ${pc(r.pred_team_total)}">${predRidge}</span></div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">RECENCY</span><span class="gc-market-val ${pc(r.recency_team_pred)}">${predRecency}</span></div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">SIM</span><span class="gc-market-val ${pc(r.elo_sim_team_pred)}">${predSim}</span></div>
-      </div>`;
+    const pc = v => { const n = parseFloat(v); return isNaN(n)||isNaN(mkt) ? '' : n >= mkt ? 'pred-over' : 'pred-under'; };
+    const pred = fmt(r.pred_team_total, 1);
+    modelPredRows = `<div class="gc-pred-row"><span class="gc-pred-lbl">Model</span><span class="gc-pred-val ${pc(r.pred_team_total)}">${pred}</span></div>`;
     const diff = parseFloat(r.pred_team_total) - mkt;
     edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
   } else if (tabKey === 'sp') {
-    // Strip mascot from market spread string for display
-    // Always show the minus side for market line
-    // Market line: show from pick team's perspective using actual pick column
-    {
-      const pickTeam = (r.pick || '').replace(/[+-]?\d+\.?\d*$/, '').trim();
-      const pickLineM = (r.pick || '').match(/([+-]?\d+\.?\d*)$/);
-      const pickLineNum = pickLineM ? parseFloat(pickLineM[1]) : NaN;
-      if (pickTeam && !isNaN(pickLineNum)) {
-        const shortPick = pickTeam.split(' ').slice(0,2).join(' ');
-        const absL = Math.abs(pickLineNum);
-        const absStr = absL % 1 === 0 ? absL.toFixed(0) : absL.toFixed(1);
-        const lineStr = pickLineNum < 0 ? '-' + absStr : '+' + absStr;
-        marketLine = shortPick + ' ' + lineStr;
-      } else {
-        marketLine = r.market_spread_str || '—';
-      }
-    }
-
-    // Build model spread lines from raw margins
-    const mktSpread = parseFloat(r.market_spread_home || r.edge_blend || 0);
-    // Identify pick team (home or away)
-    const pickTeamStr = (r.pick||'').replace(/[+-]?\d+\.?\d*$/, '').trim().toLowerCase();
-    const pickIsHomeTeam = pickTeamStr.includes((r.home_team||'').split(' ')[0].toLowerCase());
-    const pickTeamFull = pickIsHomeTeam ? (r.home_team||'') : (r.away_team||'');
-    const shortPickTeam = pickTeamFull.split(' ').slice(0,2).join(' ');
-
-    const fmtSpreadLine = (margin) => {
-      if (isNaN(parseFloat(margin))) return '<span class="gc-market-val">—</span>';
-      const m = parseFloat(margin);
-      // pred_margin = home team margin. Positive = home wins by m, negative = away wins by abs(m)
-      // Convert to pick team's implied line:
-      // if pick team is home: their margin = m, so line = -m (they're favored if m>0)
-      // if pick team is away: their margin = -m, so line = m (they're favored if m<0)
-      const pickMargin = pickIsHomeTeam ? m : -m;
-      // pickMargin > 0 means pick team wins = they are the favorite = minus line
-      const absVal = Math.abs(pickMargin) % 1 === 0 ? Math.abs(pickMargin).toFixed(0) : Math.abs(pickMargin).toFixed(1);
-      // Always show from model-projected winner's perspective
-      const otherTeamFull = pickIsHomeTeam ? (r.away_team||'') : (r.home_team||'');
-      const shortOtherTeam = otherTeamFull.split(' ').slice(0,2).join(' ');
-      let lineStr;
-      if (pickMargin >= 0) {
-        // model says pick team wins — show pick team minus
-        lineStr = shortPickTeam + ' -' + absVal;
-      } else {
-        // model says other team wins — show other team with minus line
-        lineStr = shortOtherTeam + ' -' + absVal;
-      }
-      // Agree if model also picks our team (same sign as pick line)
-      const pickLineMatch2 = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
-      const pickLineNum2 = pickLineMatch2 ? parseFloat(pickLineMatch2[1]) : NaN;
-      const pickIsMinus2 = !isNaN(pickLineNum2) && pickLineNum2 < 0;
-      const marketAbs = Math.abs(pickLineNum2); // e.g. 2.5 for -2.5 or +2.5
-      // Agree = model projects pick team covers the spread:
-      // if pick is minus (fav): pickMargin must exceed marketAbs (win by more than spread)
-      // if pick is plus (dog):  pickMargin must be > -marketAbs (lose by less than spread, or win)
-      const modelAgreesWithPick = pickIsMinus2
-        ? (pickMargin > marketAbs)
-        : (pickMargin > -marketAbs);
-      const cls = modelAgreesWithPick ? 'sp-agree' : 'sp-disagree';
-      return `<span class="gc-market-val ${cls}">${lineStr}</span>`;
-    };
-    modelPredRows = `
-      <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M1</span>${fmtSpreadLine(r.pred_margin_04)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M2</span>${fmtSpreadLine(r.pred_margin_09)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M3</span>${fmtSpreadLine(r.pred_margin_10)}</div>
-      </div>`;
+    marketLine = r.market_spread_str || '—';
+    const modelSpread = r.model_spread_str || '—';
+    modelPredRows = `<div class="gc-pred-row"><span class="gc-pred-lbl">Model</span><span class="gc-pred-val">${modelSpread}</span></div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }
 
@@ -916,10 +740,8 @@ function buildCard(r, rank, tabKey) {
     });
   } else if (tabKey === 'tt') {
     const mkt = parseFloat(r.market_team_total);
-    ['pred_team_total','recency_team_pred','elo_sim_team_pred'].forEach(col => {
-      const n = parseFloat(r[col]);
-      if (!isNaN(n) && !isNaN(mkt)) { n >= mkt ? overCount++ : underCount++; }
-    });
+    const n = parseFloat(r.pred_team_total);
+    if (!isNaN(n) && !isNaN(mkt)) { n >= mkt ? overCount++ : underCount++; }
   }
   const totalVotes = overCount + underCount;
   const overPct = totalVotes > 0 ? Math.round(overCount / totalVotes * 100) : 50;
@@ -940,7 +762,7 @@ function buildCard(r, rank, tabKey) {
 <div class="game-card">
   <div class="gc-head">
     <div class="gc-matchup">
-      <div class="gc-rank" style="color:${rank===0 ? 'var(--gold)' : '#ffffff'}">#${rank+1}</div>
+      <div class="gc-rank">#${rank+1}</div>
       <div class="gc-teams">${matchup}</div>
     </div>
     <div>${badge}</div>
@@ -955,9 +777,10 @@ function buildCard(r, rank, tabKey) {
         <div class="ag-bar"><div class="ag-bar-track"><div class="ag-bar-fill" style="width:${agPct}%"></div></div></div>
       </div>
     </div>
-    <div class="gc-cell" style="display:flex;align-items:center;justify-content:center;">
+    <div class="gc-cell" style="display:flex;align-items:center;justify-content:flex-end;">
       <div class="gc-models-wrap">
-        <div class="gc-market-row"><span class="gc-market-lbl">MARKET</span><span class="gc-market-val">${marketLine}</span></div>
+        <div class="gc-cell-label" style="text-align:center;margin-bottom:4px;">Market / Models</div>
+        <div class="gc-mkt-row"><span class="gc-mkt-lbl">Mkt</span><span class="gc-mkt-val">${marketLine}</span></div>
         ${modelPredRows}
       </div>
     </div>
@@ -1009,23 +832,14 @@ async function init() {
 }
 
 // ── TAB SWITCHING ──────────────────────────────────────────────────────────
-function switchTab(key) {
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
-  const btn = document.querySelector(`.tab[data-tab="${key}"]`);
-  const panel = document.getElementById(`panel-${key}`);
-  if (btn) btn.classList.add('active');
-  if (panel) panel.classList.add('active');
-  history.replaceState(null, '', '#' + key);
-}
 document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => switchTab(t.dataset.tab));
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(`panel-${t.dataset.tab}`).classList.add('active');
+  });
 });
-// Restore tab from hash on load
-const hashTab = window.location.hash.replace('#','');
-if (hashTab && document.querySelector(`.tab[data-tab="${hashTab}"]`)) {
-  switchTab(hashTab);
-}
 
 init();
 </script>
