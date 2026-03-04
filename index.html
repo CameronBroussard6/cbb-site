@@ -667,16 +667,18 @@ function betBadge(row, tabKey) {
 
   if (tabKey === 'sp') {
     const pick = row.pick || row.bet || '';
-    // Extract spread number from end of pick string e.g. "Mercyhurst Lakers -4.5" -> "-4.5"
+    // Extract spread number from end e.g. "Mercyhurst Lakers -4.5" -> -4.5
     const spreadMatch = pick.match(/([+-]?\d+\.?\d*)$/);
     const spreadNum = spreadMatch ? parseFloat(spreadMatch[1]) : NaN;
-    const spreadStr = spreadMatch ? (spreadNum > 0 ? '+' + spreadMatch[1] : spreadMatch[1]) : pick;
-    // Extract team name without mascot (first word only as city/school)
+    // minus = green (favorite = b-over), plus = blue (underdog = b-under)
+    const isMinus = !isNaN(spreadNum) && spreadNum < 0;
+    const cls = isMinus ? 'b-over' : 'b-under';
     const teamWords = pick.replace(/[+-]?\d+\.?\d*$/, '').trim().split(' ');
-    const shortTeam = teamWords.slice(0, 2).join(' ').trim(); // first 2 words
-    const cls = (!isNaN(spreadNum) && spreadNum > 0) ? 'b-over' : 'b-under';
-    const arrow = (!isNaN(spreadNum) && spreadNum > 0) ? '+' : '−';
-    return `<span class="badge ${cls}"><span class="badge-arrow">${arrow}</span><span class="badge-copy"><span class="badge-main">${shortTeam} ${spreadStr}</span></span></span>`;
+    const shortTeam = teamWords.slice(0, 2).join(' ').trim();
+    // Format line cleanly — no double sign
+    const absNum = isNaN(spreadNum) ? '' : Math.abs(spreadNum) % 1 === 0 ? Math.abs(spreadNum).toFixed(0) : Math.abs(spreadNum).toFixed(1);
+    const lineStr = isNaN(spreadNum) ? pick : (isMinus ? '-' : '+') + absNum;
+    return `<span class="badge ${cls}"><span class="badge-copy"><span class="badge-main">${shortTeam} ${lineStr}</span></span></span>`;
   }
 
   return `<span class="badge b-pass">PASS</span>`;
@@ -777,10 +779,10 @@ function buildCard(r, rank, tabKey) {
     const predRecency = fmt(r.recency_team_pred, 1);
     const predSim     = fmt(r.elo_sim_team_pred, 1);
     modelPredRows = `
-      <div class="gc-pred-grid" style="grid-template-columns:repeat(3,max-content);gap:2px 12px;">
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">RIDGE</span><span class="gc-pred-val ${pc(r.pred_team_total)}">${predRidge}</span></div>
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">RECENCY</span><span class="gc-pred-val ${pc(r.recency_team_pred)}">${predRecency}</span></div>
-        <div class="gc-pred-cell"><span class="gc-pred-lbl">SIM</span><span class="gc-pred-val ${pc(r.elo_sim_team_pred)}">${predSim}</span></div>
+      <div style="display:flex;flex-direction:column;gap:2px;align-items:center;">
+        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">RIDGE</span><span class="gc-pred-val ${pc(r.pred_team_total)}">${predRidge}</span></div>
+        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">RECENCY</span><span class="gc-pred-val ${pc(r.recency_team_pred)}">${predRecency}</span></div>
+        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">SIM</span><span class="gc-pred-val ${pc(r.elo_sim_team_pred)}">${predSim}</span></div>
       </div>`;
     const diff = parseFloat(r.pred_team_total) - mkt;
     edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
@@ -793,20 +795,21 @@ function buildCard(r, rank, tabKey) {
     // Build model spread lines from raw margins
     const mktSpread = parseFloat(r.market_spread_home || r.edge_blend || 0);
     const fmtSpreadLine = (margin, edge) => {
-      if (isNaN(parseFloat(margin))) return '—';
+      if (isNaN(parseFloat(margin))) return '<span class="gc-pred-val">—</span>';
       const m = parseFloat(margin);
-      const team = m >= 0 ? (r.home_team||'').split(' ').slice(0,2).join(' ') : (r.away_team||'').split(' ').slice(0,2).join(' ');
-      const line = m >= 0 ? -Math.abs(m) : Math.abs(m);
-      const lineStr = line > 0 ? '+' + fmt(line,1) : fmt(line,1);
-      const e = parseFloat(edge);
-      const cls = (!isNaN(e) && e > 0) ? 'pred-over' : 'pred-under';
-      return `<span class="gc-pred-val ${cls}">${team} ${lineStr}</span>`;
+      // positive margin = home favored = minus line; negative = away favored = plus line
+      const isMinus = m > 0;
+      const absVal = Math.abs(m) % 1 === 0 ? Math.abs(m).toFixed(0) : Math.abs(m).toFixed(1);
+      const lineStr = isMinus ? '-' + absVal : '+' + absVal;
+      // minus=green(pred-over), plus=blue(pred-under)
+      const cls = isMinus ? 'pred-over' : 'pred-under';
+      return `<span class="gc-pred-val ${cls}">${lineStr}</span>`;
     };
     modelPredRows = `
-      <div class="gc-pred-grid" style="grid-template-columns:1fr;gap:2px 0;margin-left:0;">
-        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">M1</span>${fmtSpreadLine(r.pred_margin_04, r.edge_04)}</div>
-        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">M2</span>${fmtSpreadLine(r.pred_margin_09, r.edge_09)}</div>
-        <div class="gc-pred-cell" style="gap:6px;"><span class="gc-pred-lbl">M3</span>${fmtSpreadLine(r.pred_margin_10, r.edge_10)}</div>
+      <div style="display:flex;flex-direction:row;gap:10px;justify-content:center;margin-top:2px;">
+        <div class="gc-pred-cell" style="gap:4px;"><span class="gc-pred-lbl">M1</span>${fmtSpreadLine(r.pred_margin_04, r.edge_04)}</div>
+        <div class="gc-pred-cell" style="gap:4px;"><span class="gc-pred-lbl">M2</span>${fmtSpreadLine(r.pred_margin_09, r.edge_09)}</div>
+        <div class="gc-pred-cell" style="gap:4px;"><span class="gc-pred-lbl">M3</span>${fmtSpreadLine(r.pred_margin_10, r.edge_10)}</div>
       </div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }
