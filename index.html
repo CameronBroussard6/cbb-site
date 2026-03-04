@@ -824,50 +824,48 @@ function buildCard(r, rank, tabKey) {
   } else if (tabKey === 'sp') {
     // Strip mascot from market spread string for display
     // Always show the minus side for market line
-    // Show market line from the PICK team's perspective
-    const pickTeam = (r.pick || '').replace(/[+-]?\d+\.?\d*$/, '').trim();
-    const pickLineM = (r.pick || '').match(/([+-]?\d+\.?\d*)$/);
-    const pickLineNum = pickLineM ? parseFloat(pickLineM[1]) : NaN;
-    if (pickTeam && !isNaN(pickLineNum)) {
-      const shortPick = pickTeam.split(' ').slice(0,2).join(' ');
-      const absL = Math.abs(pickLineNum);
-      const absStr = absL % 1 === 0 ? absL.toFixed(0) : absL.toFixed(1);
-      const lineStr = pickLineNum < 0 ? '-' + absStr : '+' + absStr;
-      marketLine = shortPick + ' ' + lineStr;
-    } else {
-      marketLine = r.market_spread_str || '—';
+    // Market line: show from pick team's perspective using actual pick column
+    {
+      const pickTeam = (r.pick || '').replace(/[+-]?\d+\.?\d*$/, '').trim();
+      const pickLineM = (r.pick || '').match(/([+-]?\d+\.?\d*)$/);
+      const pickLineNum = pickLineM ? parseFloat(pickLineM[1]) : NaN;
+      if (pickTeam && !isNaN(pickLineNum)) {
+        const shortPick = pickTeam.split(' ').slice(0,2).join(' ');
+        const absL = Math.abs(pickLineNum);
+        const absStr = absL % 1 === 0 ? absL.toFixed(0) : absL.toFixed(1);
+        const lineStr = pickLineNum < 0 ? '-' + absStr : '+' + absStr;
+        marketLine = shortPick + ' ' + lineStr;
+      } else {
+        marketLine = r.market_spread_str || '—';
+      }
     }
 
     // Build model spread lines from raw margins
     const mktSpread = parseFloat(r.market_spread_home || r.edge_blend || 0);
-    // Pick direction from pick column: extract line number
-    const pickLineMatch2 = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
-    const pickLineNum2 = pickLineMatch2 ? parseFloat(pickLineMatch2[1]) : NaN;
-    const pickIsMinus = !isNaN(pickLineNum2) && pickLineNum2 < 0; // pick is minus = favorite
+    // Identify pick team (home or away)
+    const pickTeamStr = (r.pick||'').replace(/[+-]?\d+\.?\d*$/, '').trim().toLowerCase();
+    const pickIsHomeTeam = pickTeamStr.includes((r.home_team||'').split(' ')[0].toLowerCase());
+    const pickTeamFull = pickIsHomeTeam ? (r.home_team||'') : (r.away_team||'');
+    const shortPickTeam = pickTeamFull.split(' ').slice(0,2).join(' ');
 
     const fmtSpreadLine = (margin) => {
       if (isNaN(parseFloat(margin))) return '<span class="gc-market-val">—</span>';
       const m = parseFloat(margin);
-      // pred_margin is home team margin: positive = home favored, negative = away favored
-      const homeIsFav = m > 0;
-      const favTeam = homeIsFav ? (r.home_team||'') : (r.away_team||'');
-      const dogTeam = homeIsFav ? (r.away_team||'') : (r.home_team||'');
-      const absVal = Math.abs(m) % 1 === 0 ? Math.abs(m).toFixed(0) : Math.abs(m).toFixed(1);
-      // Show from pick team's perspective: if pick is minus (favorite), show fav team -line
-      // if pick is plus (underdog), show dog team +line
-      let dispTeam, lineStr;
-      if (pickIsMinus) {
-        dispTeam = favTeam.split(' ').slice(0,2).join(' ');
-        lineStr = dispTeam + ' -' + absVal;
-      } else {
-        dispTeam = dogTeam.split(' ').slice(0,2).join(' ');
-        lineStr = dispTeam + ' +' + absVal;
-      }
-      // Color: does this model agree with the pick direction?
-      // Pick is minus = betting favorite; model agrees if homeIsFav matches pickHome
-      const pickTeamStr = (r.pick||'').replace(/[+-]?\d+\.?\d*$/, '').trim().toLowerCase();
-      const pickIsHomeM = pickTeamStr.includes((r.home_team||'').split(' ')[0].toLowerCase());
-      const modelAgreesWithPick = (pickIsHomeM && homeIsFav) || (!pickIsHomeM && !homeIsFav);
+      // pred_margin = home team margin. Positive = home wins by m, negative = away wins by abs(m)
+      // Convert to pick team's implied line:
+      // if pick team is home: their margin = m, so line = -m (they're favored if m>0)
+      // if pick team is away: their margin = -m, so line = m (they're favored if m<0)
+      const pickMargin = pickIsHomeTeam ? m : -m;
+      // pickMargin > 0 means pick team wins = they are the favorite = minus line
+      const absVal = Math.abs(pickMargin) % 1 === 0 ? Math.abs(pickMargin).toFixed(0) : Math.abs(pickMargin).toFixed(1);
+      const lineStr = pickMargin >= 0
+        ? shortPickTeam + ' -' + absVal
+        : shortPickTeam + ' +' + absVal;
+      // Agree if model also picks our team (same sign as pick line)
+      const pickLineMatch2 = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
+      const pickLineNum2 = pickLineMatch2 ? parseFloat(pickLineMatch2[1]) : NaN;
+      const pickIsMinus2 = !isNaN(pickLineNum2) && pickLineNum2 < 0;
+      const modelAgreesWithPick = pickIsMinus2 ? (pickMargin >= 0) : (pickMargin < 0);
       const cls = modelAgreesWithPick ? 'pred-over' : 'pred-under';
       return `<span class="gc-market-val ${cls}">${lineStr}</span>`;
     };
