@@ -324,6 +324,17 @@ main { padding: 14px; }
 .gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; }
 .gc-pred-val.pred-over { color: #4ade80; }
 .gc-pred-val.pred-under { color: #93c5fd; }
+.gc-pred-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 10px;
+}
+.gc-pred-cell {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
 .gc-models-wrap {
   display: inline-flex;
   flex-direction: column;
@@ -466,9 +477,8 @@ const TABS = {
   sp: { label: 'Spreads',      file: 'spreads_today',      histFile: 'spreads_history'     },
 };
 
-// Model prediction columns per tab (xgb_elo_pred_total excluded — outputs delta not total)
 const MODEL_COLS = {
-  gt: ['ridge_pred_total', 'recency_pred_total', 'from_team_pred_total', 'ensemble_pred_total', 'elo_sim_pred_total'],
+  gt: ['ridge_pred_total', 'recency_pred_total', 'from_team_pred_total', 'ensemble_pred_total', 'elo_sim_pred_total', 'xgb_elo_pred_total'],
   tt: ['pred_team_total'],
   sp: ['model_spread_str'],
 };
@@ -705,12 +715,16 @@ function buildCard(r, rank, tabKey) {
     const teamFoc  = fmt(r.from_team_pred_total, 1);
     const ensemble = fmt(r.ensemble_pred_total, 1);
     const eloSim   = fmt(r.elo_sim_pred_total, 1);
+    const xgbElo   = fmt(r.xgb_elo_pred_total, 1);
     modelPredRows = `
-      <div class="gc-pred-row"><span class="gc-pred-lbl">Ridge</span><span class="gc-pred-val ${pc(r.ridge_pred_total)}">${ridge}</span></div>
-      <div class="gc-pred-row"><span class="gc-pred-lbl">Recency</span><span class="gc-pred-val ${pc(r.recency_pred_total)}">${recency}</span></div>
-      <div class="gc-pred-row"><span class="gc-pred-lbl">Team Focused</span><span class="gc-pred-val ${pc(r.from_team_pred_total)}">${teamFoc}</span></div>
-      <div class="gc-pred-row"><span class="gc-pred-lbl">Ensemble</span><span class="gc-pred-val ${pc(r.ensemble_pred_total)}">${ensemble}</span></div>
-      <div class="gc-pred-row"><span class="gc-pred-lbl">ELO</span><span class="gc-pred-val ${pc(r.elo_sim_pred_total)}">${eloSim}</span></div>`;
+      <div class="gc-pred-grid">
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">RIDGE</span><span class="gc-pred-val ${pc(r.ridge_pred_total)}">${ridge}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">RECENCY</span><span class="gc-pred-val ${pc(r.recency_pred_total)}">${recency}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">TEAM</span><span class="gc-pred-val ${pc(r.from_team_pred_total)}">${teamFoc}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">ENSEMBLE</span><span class="gc-pred-val ${pc(r.ensemble_pred_total)}">${ensemble}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">SIM</span><span class="gc-pred-val ${pc(r.elo_sim_pred_total)}">${eloSim}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">XGB</span><span class="gc-pred-val ${pc(r.xgb_elo_pred_total)}">${xgbElo}</span></div>
+      </div>`;
     const diff = parseFloat(r.ensemble_pred_total) - mkt;
     edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
   } else if (tabKey === 'tt') {
@@ -779,8 +793,8 @@ function buildCard(r, rank, tabKey) {
     </div>
     <div class="gc-cell" style="display:flex;align-items:center;justify-content:flex-end;">
       <div class="gc-models-wrap">
-        <div class="gc-cell-label" style="text-align:center;margin-bottom:4px;">Market / Models</div>
-        <div class="gc-mkt-row"><span class="gc-mkt-lbl">Mkt</span><span class="gc-mkt-val">${marketLine}</span></div>
+        <div style="text-align:center;margin-bottom:6px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);">Market / Models</div>
+        <div style="text-align:center;margin-bottom:5px;"><span style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#ffffff;font-family:var(--mono);">MARKET&nbsp;&nbsp;</span><span class="gc-mkt-val">${marketLine}</span></div>
         ${modelPredRows}
       </div>
     </div>
