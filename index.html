@@ -288,7 +288,7 @@ main { padding: 14px; }
 }
 .gc-teams .away { color: #ffffff; font-weight: 500; display: block; }
 .gc-teams .home-team { display: block; }
-.gc-teams .vs   { color: #ffffff; font-size: 9px; display: block; line-height: 1; margin: 1px 0; }
+.gc-teams .vs   { color: var(--muted2); font-size: 9px; display: block; line-height: 1; margin: 1px 0; }
 
 /* Body: 2-column layout - scores left, models right */
 .gc-body {
@@ -347,16 +347,23 @@ main { padding: 14px; }
 .gc-pred-val.pred-under { color: #93c5fd; }
 .gc-pred-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px 20px;
+  grid-template-columns: repeat(2, max-content);
+  gap: 2px 16px;
   margin-top: 4px;
+  justify-content: center;
 }
 .gc-pred-cell {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  min-width: 80px;
+  gap: 6px;
+}
+.gc-pred-cell .gc-pred-lbl {
+  width: 52px;
+  text-align: right;
+}
+.gc-pred-cell .gc-pred-val {
+  width: 32px;
+  text-align: left;
 }
 .gc-models-wrap {
   display: inline-flex;
