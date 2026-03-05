@@ -140,6 +140,7 @@ header {
   text-transform: uppercase;
   color: #fff;
   margin-bottom: 5px;
+  text-align: center;
 }
 .rec-row {
   display: flex;
@@ -171,10 +172,10 @@ header {
 .rec-row-pct {
   font-family: var(--mono);
   font-size: 10px;
-  color: var(--muted2);
+  color: #cdd2da;
 }
-.rec-row-pct.tier-1 { color: #c9a030; }
-.rec-row-pct.tier-5 { color: #b87840; }
+.rec-row-pct.tier-1 { color: #f5c542; }
+.rec-row-pct.tier-5 { color: #f0a05a; }
 
 /* ── TABS ── */
 .tabs-wrap {
@@ -679,7 +680,7 @@ function fmt(v, d=1) {
   return s.endsWith('.0') ? String(Math.round(n)) : s;
 }
 
-function fmtRec(w, l) { return (w+l===0) ? '—' : `${w}-${l}`; }
+function fmtRec(w, l) { return (w+l===0) ? '—' : `${w}/${w+l}`; }
 function pct(w, l)     { return (w+l===0) ? '—' : `${Math.round(w/(w+l)*100)}%`; }
 
 // ── AG SCORE ───────────────────────────────────────────────────────────────
