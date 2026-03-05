@@ -99,47 +99,82 @@ header {
 }
 
 /* ── RECORD TRACKERS ── */
+.records-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.records-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px 0;
+}
+.records-header-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.records-header-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  white-space: nowrap;
+}
 .records {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
 }
 .rec {
-  padding: 12px 16px;
+  padding: 6px 16px 12px;
   border-right: 1px solid var(--border);
-  /* Blue left-accent stripe — CBB visual identity */
   border-left: 2px solid var(--blue);
 }
 .rec:first-child { border-left: 2px solid var(--blue); }
 .rec:last-child { border-right: none; }
 .rec-label {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted2);
-  margin-bottom: 4px;
+  color: #fff;
+  margin-bottom: 5px;
 }
-.rec-val {
+.rec-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+.rec-row-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9097a3;
+  width: 30px;
+  flex-shrink: 0;
+}
+.rec-row-label.tier-1 { color: #f5c542; }
+.rec-row-label.tier-5 { color: #f0a05a; }
+.rec-row-label.tier-all { color: #cdd2da; }
+.rec-row-val {
   font-family: var(--mono);
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  flex: 1;
 }
-.rec-sub {
+.rec-row-val.tier-1 { color: #f5c542; }
+.rec-row-val.tier-5 { color: #f0a05a; }
+.rec-row-pct {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 10px;
   color: var(--muted2);
-  margin-top: 3px;
 }
-.rec-sub2 {
-  font-family: var(--mono);
-  font-size: 9px;
-  color: var(--muted2);
-  margin-top: 1px;
-}
+.rec-row-pct.tier-1 { color: #c9a030; }
+.rec-row-pct.tier-5 { color: #b87840; }
 
 /* ── TABS ── */
 .tabs-wrap {
@@ -470,24 +505,67 @@ main { padding: 14px; }
 </header>
 
 <!-- Record trackers: Game Totals | Team Totals | Spreads -->
-<div class="records">
-  <div class="rec">
-    <div class="rec-label">Game Totals</div>
-    <div class="rec-val" id="r-gt">—</div>
-    <div class="rec-sub" id="r-gt-pct">—</div>
-    <div class="rec-sub2" id="r-gt-top10">—</div>
+<div class="records-wrap">
+  <div class="records-header">
+    <div class="records-header-line"></div>
+    <div class="records-header-label">Records</div>
+    <div class="records-header-line"></div>
   </div>
-  <div class="rec">
-    <div class="rec-label">Team Totals</div>
-    <div class="rec-val" id="r-tt">—</div>
-    <div class="rec-sub" id="r-tt-pct">—</div>
-    <div class="rec-sub2" id="r-tt-top10">—</div>
-  </div>
-  <div class="rec">
-    <div class="rec-label">Spreads</div>
-    <div class="rec-val" id="r-sp">—</div>
-    <div class="rec-sub" id="r-sp-pct">—</div>
-    <div class="rec-sub2" id="r-sp-top10">—</div>
+  <div class="records">
+    <div class="rec">
+      <div class="rec-label">Game Totals</div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-1">Top 1</span>
+        <span class="rec-row-val tier-1" id="r-gt-top1">—</span>
+        <span class="rec-row-pct tier-1" id="r-gt-top1-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-5">Top 5</span>
+        <span class="rec-row-val tier-5" id="r-gt-top5">—</span>
+        <span class="rec-row-pct tier-5" id="r-gt-top5-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-all">All</span>
+        <span class="rec-row-val" id="r-gt-all">—</span>
+        <span class="rec-row-pct" id="r-gt-all-pct">—</span>
+      </div>
+    </div>
+    <div class="rec">
+      <div class="rec-label">Team Totals</div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-1">Top 1</span>
+        <span class="rec-row-val tier-1" id="r-tt-top1">—</span>
+        <span class="rec-row-pct tier-1" id="r-tt-top1-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-5">Top 5</span>
+        <span class="rec-row-val tier-5" id="r-tt-top5">—</span>
+        <span class="rec-row-pct tier-5" id="r-tt-top5-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-all">All</span>
+        <span class="rec-row-val" id="r-tt-all">—</span>
+        <span class="rec-row-pct" id="r-tt-all-pct">—</span>
+      </div>
+    </div>
+    <div class="rec">
+      <div class="rec-label">Spreads</div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-1">Top 1</span>
+        <span class="rec-row-val tier-1" id="r-sp-top1">—</span>
+        <span class="rec-row-pct tier-1" id="r-sp-top1-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-5">Top 5</span>
+        <span class="rec-row-val tier-5" id="r-sp-top5">—</span>
+        <span class="rec-row-pct tier-5" id="r-sp-top5-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-all">All</span>
+        <span class="rec-row-val" id="r-sp-all">—</span>
+        <span class="rec-row-pct" id="r-sp-all-pct">—</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -726,12 +804,17 @@ async function loadRecords() {
     const rows = await fetchCSV(`${BASE}/data/${cfg.histFile}.csv`);
     if (!rows || !rows.length) continue;
 
-    const all   = computeRecord(rows, cfg.resultCol);
-    const top10 = computeRecord(rows, cfg.resultCol, 10);
+    const all  = computeRecord(rows, cfg.resultCol);
+    const top5 = computeRecord(rows, cfg.resultCol, 5);
+    const top1 = computeRecord(rows, cfg.resultCol, 1);
+    const id   = cfg.id;
 
-    document.getElementById(`r-${cfg.id}`).textContent     = fmtRec(all.w, all.l);
-    document.getElementById(`r-${cfg.id}-pct`).textContent = pct(all.w, all.l);
-    document.getElementById(`r-${cfg.id}-top10`).textContent = `Top10: ${fmtRec(top10.w, top10.l)} ${pct(top10.w, top10.l)}`;
+    document.getElementById(`r-${id}-all`).textContent      = fmtRec(all.w, all.l);
+    document.getElementById(`r-${id}-all-pct`).textContent  = pct(all.w, all.l);
+    document.getElementById(`r-${id}-top5`).textContent     = fmtRec(top5.w, top5.l);
+    document.getElementById(`r-${id}-top5-pct`).textContent = pct(top5.w, top5.l);
+    document.getElementById(`r-${id}-top1`).textContent     = fmtRec(top1.w, top1.l);
+    document.getElementById(`r-${id}-top1-pct`).textContent = pct(top1.w, top1.l);
   }
 }
 
@@ -897,9 +980,9 @@ function buildCard(r, rank, tabKey) {
     };
     modelPredRows = `
       <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M1</span>${fmtSpreadLine(r.pred_margin_04)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M2</span>${fmtSpreadLine(r.pred_margin_09)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--warn);text-transform:uppercase;letter-spacing:0.05em;min-width:20px;text-align:right;">M3</span>${fmtSpreadLine(r.pred_margin_10)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:46px;text-align:right;">Model 1</span>${fmtSpreadLine(r.pred_margin_04)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:46px;text-align:right;">Model 2</span>${fmtSpreadLine(r.pred_margin_09)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:46px;text-align:right;">Model 3</span>${fmtSpreadLine(r.pred_margin_10)}</div>
       </div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }
@@ -940,7 +1023,7 @@ function buildCard(r, rank, tabKey) {
 <div class="game-card">
   <div class="gc-head">
     <div class="gc-matchup">
-      <div class="gc-rank" style="color:${rank===0 ? 'var(--gold)' : '#ffffff'}">#${rank+1}</div>
+      <div class="gc-rank" style="color:${rank===0 ? '#f5c542' : rank<5 ? '#f0a05a' : '#ffffff'};font-weight:${rank<5?'700':'500'}">#${rank+1}</div>
       <div class="gc-teams">${matchup}</div>
     </div>
     <div>${badge}</div>
