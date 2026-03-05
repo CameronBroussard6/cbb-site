@@ -1,0 +1,79 @@
+date,game_id,team_name,homeAway,market_team_total,bet,pred_team_total,recency_team_pred,elo_sim_team_pred,brain_score,actual_team_pts,bet_result
+2026-03-04,401828461,Saint Louis Billikens,home,88.5,UNDER,74.5,82.5,81.5,10.8,79,W
+2026-03-04,401822970,Villanova Wildcats,away,69,OVER,84,73,76,10.5,76,W
+2026-03-04,401851423,Cleveland State Vikings,away,74,OVER,85.5,77.5,70.5,8.5,61,L
+2026-03-04,401825557,Ohio State Buckeyes,away,80,UNDER,67,80,77.5,7.8,94,L
+2026-03-04,401820780,California Golden Bears,away,78.5,UNDER,67,87,79.5,7.5,76,W
+2026-03-04,401822971,Marquette Golden Eagles,away,78.5,UNDER,67.5,88.5,71.5,7.2,78,W
+2026-03-04,401825555,Minnesota Golden Gophers,away,66,UNDER,56.5,69,72.5,7,47,W
+2026-03-04,401851515,Mercyhurst Lakers,home,68,OVER,75.5,62.5,76,6.8,70,W
+2026-03-04,401828460,George Washington Revolutionaries,home,83,UNDER,75.5,77.5,75.5,6.7,91,L
+2026-03-04,401851346,Gardner-Webb Runnin' Bulldogs,away,66,OVER,74,61,69.5,6.7,65,L
+2026-03-04,401827721,Baylor Bears,away,64.5,OVER,71.5,59.5,72,6.1,64,L
+2026-03-04,401851346,South Carolina Upstate Spartans,home,78,UNDER,72.5,70.5,76,6.1,64,W
+2026-03-04,401828258,Rice Owls,away,65,OVER,66,78.5,72.5,5.9,58,L
+2026-03-04,401825557,Penn State Nittany Lions,home,73,UNDER,66.5,68.5,72,5.7,62,W
+2026-03-04,401820780,Georgia Tech Yellow Jackets,home,76.5,UNDER,70,73,71.5,5.5,65,W
+2026-03-04,401825556,Purdue Boilermakers,away,78,UNDER,74.5,70.5,75.5,5.3,70,W
+2026-03-04,401828457,Davidson Wildcats,home,69,OVER,77,57.5,72,5.3,67,L
+2026-03-04,401851637,Georgia Southern Eagles,home,80,UNDER,75.5,86,76,5.2,88,L
+2026-03-04,401851637,Old Dominion Monarchs,away,78,UNDER,72,82,74.5,5.1,84,L
+2026-03-04,401851243,West Georgia Wolves,home,82,UNDER,76.5,77.5,76.5,4.7,93,L
+2026-03-04,401828457,Saint Joseph's Hawks,away,67,OVER,71.5,62,72.5,4.6,70,W
+2026-03-04,401851636,Louisiana Ragin' Cajuns,away,64,OVER,69,60,69.5,4.4,72,W
+2026-03-04,401828460,St. Bonaventure Bonnies,away,75.5,UNDER,69,83,73.5,4.3,82,L
+2026-03-04,401825558,Washington Huskies,home,78.5,UNDER,76.5,72,73,4,91,L
+2026-03-04,401808273,Arkansas Razorbacks,home,85.5,OVER,90.5,88,76,3.9,105,W
+2026-03-04,401820782,Stanford Cardinal,away,75,UNDER,69,74,76,3.8,86,L
+2026-03-04,401820784,Miami Hurricanes,away,78,UNDER,72.5,76.5,75,3.8,77,W
+2026-03-04,401822969,Creighton Bluejays,away,76.5,UNDER,73,71.5,75,3.8,76,W
+2026-03-04,401822970,DePaul Blue Demons,home,66.5,UNDER,64,61,70.5,3.8,57,W
+2026-03-04,401851423,Wright State Raiders,home,88,UNDER,82.5,87,80,3.8,90,L
+2026-03-04,401820783,Pittsburgh Panthers,home,71,OVER,72,79.5,71,3.7,74,W
+2026-03-04,401851426,Detroit Mercy Titans,home,76.5,OVER,80.5,80,76,3.7,84,W
+2026-03-04,401851516,Stonehill Skyhawks,away,67.5,OVER,71.5,64.5,71.5,3.7,81,W
+2026-03-04,401820782,Notre Dame Fighting Irish,home,73,OVER,77,76.5,71.5,3.6,78,W
+2026-03-04,401825559,Wisconsin Badgers,home,84,UNDER,79,83,78.5,3.5,78,W
+2026-03-04,401851515,Fairleigh Dickinson Knights,away,64.5,OVER,68.5,62,73.5,3.5,61,L
+2026-03-04,401822971,Providence Friars,home,83,UNDER,78,90.5,80.5,3.4,56,W
+2026-03-04,401828459,La Salle Explorers,home,64.5,OVER,69.5,65.5,71,3.3,87,W
+2026-03-04,401828258,North Texas Mean Green,home,72.5,OVER,74,78,74,3.1,62,L
+2026-03-04,401828461,Loyola Chicago Ramblers,away,66,OVER,70,64,67,3.1,65,L
+2026-03-04,401851619,Kansas City Roos,away,70.5,OVER,74,68.5,71,3.1,62,L
+2026-03-04,401825556,Northwestern Wildcats,home,67.5,UNDER,66,62,70.5,3,66,W
+2026-03-04,401851241,Eastern Kentucky Colonels,home,80,UNDER,78.5,85.5,76.5,3,76,W
+2026-03-04,401851243,North Florida Ospreys,away,78,OVER,82,76,72,3,85,W
+2026-03-04,401851424,Youngstown State Penguins,away,70,OVER,71,75.5,72.5,3,53,L
+2026-03-04,401851514,Central Connecticut Blue Devils,home,71,UNDER,68,74,74.5,3,60,W
+2026-03-04,401827721,Houston Cougars,home,79,UNDER,77.5,84,76,2.9,77,W
+2026-03-04,401830832,New Mexico Lobos,home,79.5,UNDER,78.5,73.5,75,2.9,74,W
+2026-03-04,401828256,Charlotte 49ers,home,72.5,UNDER,68.5,80.5,72.5,2.7,74,L
+2026-03-04,401851241,Stetson Hatters,away,74.5,UNDER,71.5,76.5,74.5,2.7,92,L
+2026-03-04,401822969,Butler Bulldogs,home,79,UNDER,77,74.5,75,2.6,59,W
+2026-03-04,401851428,Northern Kentucky Norse,away,80,UNDER,78,77,74.5,2.6,85,L
+2026-03-04,401851523,SIU Edwardsville Cougars,home,66,UNDER,65.5,71,77,2.5,71,L
+2026-03-04,401851426,Milwaukee Panthers,away,75,OVER,78.5,74,71.5,2.4,63,L
+2026-03-04,401851524,Lindenwood Lions,home,76,UNDER,73.5,78,75.5,2.4,72,W
+2026-03-04,401851514,Wagner Seahawks,away,67.5,OVER,71,61.5,70.5,2.3,70,W
+2026-03-04,401820783,Florida State Seminoles,away,73.5,UNDER,70.5,82.5,77.5,2.2,75,L
+2026-03-04,401828458,Rhode Island Rams,home,73,OVER,76,72,72.5,2.2,64,L
+2026-03-04,401830832,Colorado State Rams,away,71,OVER,72,67,72,2.2,82,W
+2026-03-04,401851516,Le Moyne Dolphins,home,72,OVER,74.5,70.5,76,2.2,71,L
+2026-03-04,401825555,Indiana Hoosiers,home,72.5,UNDER,72,76.5,75.5,2.1,77,L
+2026-03-04,401828256,UAB Blazers,away,75,UNDER,73.5,78,75,2.1,80,L
+2026-03-04,401825558,USC Trojans,away,72.5,OVER,75.5,73,76,2,72,L
+2026-03-04,401825559,Maryland Terrapins,away,70,UNDER,69,66,68.5,2,45,W
+2026-03-04,401851513,Chicago State Cougars,away,64,OVER,66,62,66.5,2,75,W
+2026-03-04,401808273,Texas Longhorns,away,78.5,UNDER,75.5,78,73,1.9,85,L
+2026-03-04,401828458,Duquesne Dukes,away,70.5,UNDER,68.5,72.5,76,1.9,52,W
+2026-03-04,401851513,Long Island University Sharks,home,74,UNDER,73.5,70.5,78.5,1.8,79,L
+2026-03-04,401851424,Robert Morris Colonials,home,73,OVER,75,71.5,75,1.6,68,L
+2026-03-04,401828459,Fordham Rams,away,67.5,OVER,68.5,65,76,1.5,84,W
+2026-03-04,401851523,Eastern Illinois Panthers,away,61.5,UNDER,59.5,61.5,71.5,1.4,77,L
+2026-03-04,401851524,Little Rock Trojans,away,72.5,UNDER,70.5,72.5,72,1.2,62,W
+2026-03-04,401851619,Oral Roberts Golden Eagles,home,78.5,OVER,79.5,77,75,1.2,84,W
+2026-03-04,401851636,James Madison Dukes,home,71,OVER,71.5,72.5,75.5,1.2,87,W
+2026-03-04,401820784,SMU Mustangs,home,79,UNDER,78,80,73.5,1,69,W
+2026-03-04,401851428,Oakland Golden Grizzlies,home,82,OVER,82,81,74,0.5,84,W
+2026-03-04,401851239,Florida Gulf Coast Eagles,home,,,77,74,75.5,,69,
+2026-03-04,401851239,North Alabama Lions,away,,,68.5,61,72,,58,
