@@ -981,9 +981,9 @@ function buildCard(r, rank, tabKey) {
     };
     modelPredRows = `
       <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:46px;text-align:right;">Model 1</span>${fmtSpreadLine(r.pred_margin_04)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:46px;text-align:right;">Model 2</span>${fmtSpreadLine(r.pred_margin_09)}</div>
-        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:46px;text-align:right;">Model 3</span>${fmtSpreadLine(r.pred_margin_10)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:62px;text-align:right;">XGB</span>${fmtSpreadLine(r.pred_margin_04)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:62px;text-align:right;">ELO</span>${fmtSpreadLine(r.pred_margin_09)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:62px;text-align:right;">AdjForm</span>${fmtSpreadLine(r.pred_margin_10)}</div>
       </div>`;
     edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
   }

@@ -1,0 +1,2 @@
+date,n_games,n_graded,mean_tempo_match,sd_tempo_match,mean_tempo_base,mean_tempo_vol,sd_tempo_vol,mean_ppp_sum_base,mean_matchup_ppp,mean_matchup_gap,mean_three_sum,mean_ft_sum,mean_tov_sum,mean_blowout,mean_close,mean_margin_vol,mean_gp_min,mean_rest_min,mean_market_total,sd_market_total,MAE_total,bias_total,pct_within_5,pct_within_10,mean_abs_base_error,mean_tempo_actual,mean_ppp_sum_actual
+2026-03-05,46,44,,,,,,,,,,,,,,,,,146.3048780487805,8.25218005194725,12.987179487179487,-0.3717948717948718,0.1794871794871795,0.3333333333333333,,67.33494318181819,2.172705846626104

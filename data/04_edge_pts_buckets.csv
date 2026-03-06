@@ -1,0 +1,5 @@
+edge_bucket,picks,wins,losses,pushes,win_pct,avg_edge_pts,avg_brain_score
+0-3 pts,8,4,4,0,50,1.06,5.54
+3-6 pts,11,4,7,0,36.4,3.82,7.54
+6-9 pts,8,3,5,0,37.5,7.19,11.34
+9+ pts,12,4,8,0,33.3,11.83,16.25
