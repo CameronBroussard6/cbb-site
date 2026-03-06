@@ -780,12 +780,23 @@ function betBadge(row, tabKey) {
 // ── RECORD COMPUTATION ─────────────────────────────────────────────────────
 function computeRecord(rows, resultCol, topN = null) {
   if (!rows || !rows.length) return { w: 0, l: 0, p: 0 };
-  let sorted = rows;
+  let eligible = rows;
   if (topN) {
-    sorted = rows.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0)).slice(0, topN);
+    // Group by date, take top-N brain_score per day, then flatten
+    const byDate = {};
+    rows.forEach(r => {
+      const d = r.date || 'unknown';
+      if (!byDate[d]) byDate[d] = [];
+      byDate[d].push(r);
+    });
+    eligible = [];
+    Object.values(byDate).forEach(dayRows => {
+      const sorted = dayRows.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
+      eligible.push(...sorted.slice(0, topN));
+    });
   }
   let w=0, l=0, p=0;
-  sorted.forEach(r => {
+  eligible.forEach(r => {
     const res = (r[resultCol]||'').toUpperCase();
     if (res==='W') w++;
     else if (res==='L') l++;
@@ -826,7 +837,9 @@ function buildCards(rows, tabKey) {
     return `<div class="empty"><div class="icon">🏀</div><p>No ${label} picks for today.</p></div>`;
   }
 
-  const sorted = rows.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
+  const isTBD = t => !t || t.trim() === '' || t.trim().toUpperCase() === 'TBD' || t.trim().toUpperCase() === 'NA';
+  const valid = rows.filter(r => !isTBD(r.away_team) && !isTBD(r.home_team));
+  const sorted = valid.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
 
   return `<div class="game-cards">${sorted.map((r, i) => buildCard(r, i, tabKey)).join('')}</div>`;
 }
