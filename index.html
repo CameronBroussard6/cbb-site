@@ -838,7 +838,10 @@ function buildCards(rows, tabKey) {
   }
 
   const isTBD = t => !t || t.trim() === '' || t.trim().toUpperCase() === 'TBD' || t.trim().toUpperCase() === 'NA';
-  const valid = rows.filter(r => !isTBD(r.away_team) && !isTBD(r.home_team));
+  const valid = rows.filter(r => {
+    if (tabKey === 'tt') return !isTBD(r.team_name);
+    return !isTBD(r.away_team) && !isTBD(r.home_team);
+  });
   const sorted = valid.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
 
   return `<div class="game-cards">${sorted.map((r, i) => buildCard(r, i, tabKey)).join('')}</div>`;
