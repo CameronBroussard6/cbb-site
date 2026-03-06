@@ -4,17 +4,17 @@ rank,date,game_id,away_team,home_team,market_spread_str,pick,model_spread_str,pr
 3,2026-03-06,401851347,Gardner-Webb Runnin' Bulldogs,High Point Panthers,High Point Panthers -26.5,High Point Panthers -26.5,High Point Panthers -27,NA,22.5,29.5,27,NA,-4,3,0.5,0,0,0,0.8,0.5,NA,NA,-26.5
 4,2026-03-06,401851245,Bellarmine Knights,Central Arkansas Bears,Central Arkansas Bears -6.5,Central Arkansas Bears -6.5,Central Arkansas Bears -14,NA,11,15.5,14,NA,4.5,9,7.5,0.8,0,0.6,0,7.5,NA,NA,-6.5
 5,2026-03-06,401856422,Northeastern Huskies,North Carolina A&T Aggies,North Carolina A&T Aggies 0,North Carolina A&T Aggies 0,North Carolina A&T Aggies -7.5,NA,7,8,7.5,NA,7,8,7.5,0.8,0,0.6,0,7.5,NA,NA,0
-6,2026-03-06,401851348,Charleston Southern Buccaneers,Winthrop Eagles,Winthrop Eagles -3.5,Winthrop Eagles -3.5,Winthrop Eagles -14,NA,16.5,12.5,14,NA,13,9,10.5,0.8,0,0.6,0,10.5,NA,NA,-3.5
+6,2026-03-06,401851348,Charleston Southern Buccaneers,Winthrop Eagles,Winthrop Eagles -4.5,Winthrop Eagles -4.5,Winthrop Eagles -14,NA,16.5,12.5,14,NA,12,8,9.5,0.8,0,0.6,0,9.5,NA,NA,-4.5
 7,2026-03-06,401851246,Florida Gulf Coast Eagles,Lipscomb Bisons,Lipscomb Bisons -4.5,Lipscomb Bisons -4.5,Lipscomb Bisons -18,NA,23,15,18,NA,18.5,10.5,13.5,0.8,0,0.6,0,13.5,NA,NA,-4.5
 8,2026-03-06,401851489,UIC Flames,Murray State Racers,Murray State Racers -1.5,UIC Flames +1.5,UIC Flames -11.5,NA,-8.5,-13.5,-11.5,NA,-10,-15,-13,0.8,0,0.6,0,13,NA,NA,-1.5
 9,2026-03-06,401851579,The Citadel Bulldogs,Chattanooga Mocs,Chattanooga Mocs -7.5,Chattanooga Mocs -7.5,Chattanooga Mocs -16.5,NA,7,21,16.5,NA,-0.5,13.5,9,0,0,0,0,9,NA,NA,-7.5
-10,2026-03-06,401851247,Stetson Hatters,Austin Peay Governors,Austin Peay Governors -10.5,Stetson Hatters +10.5,Austin Peay Governors -10,NA,12,9,10,NA,1.5,-1.5,-0.5,0,0,0,0,0.5,NA,NA,-10.5
+10,2026-03-06,401851247,Stetson Hatters,Austin Peay Governors,Austin Peay Governors -11,Stetson Hatters +11,Austin Peay Governors -10,NA,12,9,10,NA,1,-2,-1,0,0,0,0,1,NA,NA,-11
 11,2026-03-06,401851349,Longwood Lancers,UNC Asheville Bulldogs,UNC Asheville Bulldogs -1.5,Longwood Lancers +1.5,UNC Asheville Bulldogs -1.5,NA,13,-4,1.5,NA,11.5,-5.5,-0,0,0,0,2.3,0,NA,NA,-1.5
 12,2026-03-06,401814602,Northern Illinois Huskies,Akron Zips,Akron Zips -22.5,Akron Zips -22.5,Akron Zips -31.5,NA,19.5,37.5,31.5,NA,-3,15,9,0,0,0,0,9,NA,NA,-22.5
 13,2026-03-06,401814598,Bowling Green Falcons,Eastern Michigan Eagles,Eastern Michigan Eagles +4,Eastern Michigan Eagles +4,Bowling Green Falcons -2.5,NA,-10,1.5,-2.5,NA,-6.5,5.5,1.5,0,0,0,1.3,1.5,NA,NA,3.75
 14,2026-03-06,401851621,Omaha Mavericks,South Dakota Coyotes,South Dakota Coyotes +3.5,South Dakota Coyotes +3.5,South Dakota Coyotes -11,NA,21,6,11,NA,24.5,9.5,14.5,0.8,0,0.6,0,14.5,NA,NA,3.5
 15,2026-03-06,401828462,VCU Rams,Dayton Flyers,Dayton Flyers -1.5,Dayton Flyers -1.5,Dayton Flyers -5,NA,1,7,5,NA,-0.5,5.5,3.5,0,0,0,0,3.5,NA,NA,-1.5
-16,2026-03-06,401818565,Pennsylvania Quakers,Brown Bears,Brown Bears +2,Pennsylvania Quakers -2,Pennsylvania Quakers -13,NA,-19,-9.5,-13,NA,-17,-7.5,-10.5,0.8,0,0.6,0,10.5,NA,NA,2.25
+16,2026-03-06,401818565,Pennsylvania Quakers,Brown Bears,Brown Bears +2,Pennsylvania Quakers -2,Pennsylvania Quakers -13,NA,-19,-9.5,-13,NA,-17,-7.5,-11,0.8,0,0.6,0,11,NA,NA,2
 17,2026-03-06,401814603,Western Michigan Broncos,Kent State Golden Flashes,Kent State Golden Flashes -12,Western Michigan Broncos +12,Kent State Golden Flashes -10,NA,28,0.5,10,NA,16,-11.5,-2,0,0,0,2.5,2,NA,NA,-12
 18,2026-03-06,401814600,Central Michigan Chippewas,Ball State Cardinals,Ball State Cardinals -2.5,Central Michigan Chippewas +2.5,Central Michigan Chippewas -5.5,NA,4,-10,-5.5,NA,1.5,-12.5,-8,0,0,0,0,8,NA,NA,-2.5
 19,2026-03-06,401814599,Buffalo Bulls,Toledo Rockets,Toledo Rockets -8,Toledo Rockets -8,Toledo Rockets -17,NA,17,17,17,NA,9,9,9,0.8,0,0.6,0,9,NA,NA,-8
