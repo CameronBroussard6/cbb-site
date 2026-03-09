@@ -497,47 +497,34 @@ main { padding: 14px; }
   border-color: var(--accent);
   color: #fff;
 }
-.day-btn.tomorrow { border-color: #3b82f6; }
 .day-btn.tomorrow.active { background: #3b82f6; border-color: #3b82f6; }
 
 /* ── LINE MOVEMENT ── */
 .lm-wrap {
-  display: flex;
-  align-items: center;
-  gap: 5px;
   margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid var(--border);
+}
+.lm-header-val {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 .lm-label {
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted2);
   white-space: nowrap;
 }
-.lm-bar {
-  flex: 1;
-  height: 3px;
-  background: var(--border);
-  border-radius: 2px;
-  position: relative;
-  overflow: visible;
-}
-.lm-fill {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.3s;
-}
-.lm-fill.lm-good  { background: #4ade80; }
-.lm-fill.lm-bad   { background: #ef4444; }
-.lm-fill.lm-none  { background: var(--muted2); }
 .lm-val {
   font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   white-space: nowrap;
+  text-align: center;
 }
 .lm-val.lm-good  { color: #4ade80; }
 .lm-val.lm-bad   { color: #ef4444; }
@@ -1158,7 +1145,7 @@ function buildCard(r, rank, tabKey, day='today') {
 
   // Line movement (today/tomorrow only)
   const lineMoveHtml = (day === 'today' || day === 'tomorrow')
-    ? buildLineMoveHtml(r.game_id, tabKey, oddsHistCache)
+    ? buildLineMoveHtml(r.game_id, tabKey, oddsHistCache, r)
     : '';
 
   // Yesterday result overlay
@@ -1205,7 +1192,19 @@ async function loadOddsHistory(dateStr) {
   return oddsHistCache;
 }
 
-function buildLineMoveHtml(gameId, tabKey, oddsHist) {
+// Abbreviate a team name to initials: "Georgia Southern Eagles" -> "G.S."
+function teamInitials(name) {
+  if (!name) return '?';
+  const words = name.replace(/\(.*?\)/g, '').trim().split(/\s+/);
+  // drop common suffixes
+  const skip = new Set(['university','college','state','the','of','at','&','and','a']);
+  const init = words.filter(w => w.length > 0 && !skip.has(w.toLowerCase()))
+                    .map(w => w[0].toUpperCase() + '.')
+                    .join('');
+  return init || words[0][0].toUpperCase() + '.';
+}
+
+function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
   if (!oddsHist || oddsHist.length === 0) return '';
   const gameRows = oddsHist.filter(r => r.game_id === gameId);
   if (gameRows.length < 2) return '';
@@ -1214,31 +1213,58 @@ function buildLineMoveHtml(gameId, tabKey, oddsHist) {
   const first = sorted[0];
   const last  = sorted[sorted.length - 1];
 
-  let move, moveLabel, isFav;
+  let moveLabel = '', dirCls = 'lm-none', bet = (row.bet || row.pick || '').toUpperCase();
+
   if (tabKey === 'sp') {
     const firstV = parseFloat(first.market_spread_home);
     const lastV  = parseFloat(last.market_spread_home);
     if (isNaN(firstV) || isNaN(lastV)) return '';
-    move = lastV - firstV;
-    moveLabel = move === 0 ? 'Flat' : (move > 0 ? '+' : '') + move.toFixed(1) + ' spread';
+    const move = lastV - firstV;
+
+    // Format spread value with team initials for clarity
+    const homeInit = teamInitials(row.home_team || '');
+    const fmtSpread = v => {
+      if (v === 0) return 'PK';
+      // positive = home favored by v, negative = away favored
+      const favInit = v < 0 ? homeInit : teamInitials(row.away_team || '');
+      return `${favInit} ${v > 0 ? '+' : ''}${v.toFixed(1)}`;
+    };
+
+    if (move === 0) {
+      moveLabel = `${fmtSpread(firstV)} → flat`;
+      dirCls = 'lm-none';
+    } else {
+      moveLabel = `${fmtSpread(firstV)} → ${fmtSpread(lastV)}`;
+      // Good = line moved in direction of our pick
+      // Our pick direction: pred_margin_blend > 0 means we like home
+      const pickHome = parseFloat(row.pred_margin_blend || 0) > 0;
+      // Home spread going more negative = home getting worse odds = bad for home pick
+      const movedWithPick = (pickHome && move < 0) || (!pickHome && move > 0);
+      dirCls = movedWithPick ? 'lm-good' : 'lm-bad';
+    }
   } else {
     const firstV = parseFloat(first.market_total);
     const lastV  = parseFloat(last.market_total);
     if (isNaN(firstV) || isNaN(lastV)) return '';
-    move = lastV - firstV;
-    moveLabel = move === 0 ? 'Flat' : (move > 0 ? '+' : '') + move.toFixed(1) + ' O/U';
+    const move = lastV - firstV;
+
+    if (move === 0) {
+      moveLabel = 'flat';
+      dirCls = 'lm-none';
+    } else {
+      const sign = move > 0 ? '+' : '';
+      moveLabel = `${sign}${move.toFixed(1)}`;
+      // Good = line moved with our bet
+      const movedWithBet = (bet === 'OVER' && move > 0) || (bet === 'UNDER' && move < 0);
+      dirCls = movedWithBet ? 'lm-good' : 'lm-bad';
+    }
   }
 
-  const absMv = Math.abs(move);
-  const barPct = Math.min(absMv / 3 * 100, 100); // 3pt = full bar
-  const cls = move === 0 ? 'lm-none' : (absMv > 0 ? 'lm-good' : 'lm-bad');
-  // Actually good/bad depends on bet direction — just show magnitude + direction for now
-  const dirCls = move === 0 ? 'lm-none' : move > 0 ? 'lm-good' : 'lm-bad';
-
   return `<div class="lm-wrap">
-    <div class="lm-label">Line</div>
-    <div class="lm-bar"><div class="lm-fill ${dirCls}" style="width:${barPct}%;${move < 0 ? 'right:0;left:auto;' : 'left:0;'}"></div></div>
-    <div class="lm-val ${dirCls}">${moveLabel}</div>
+    <div class="lm-header-val">
+      <div class="lm-label">LINE MVMT</div>
+      <div class="lm-val ${dirCls}">${moveLabel}</div>
+    </div>
   </div>`;
 }
 
@@ -1255,26 +1281,38 @@ function buildYestResult(r, tabKey, histRows) {
   const actualTotal = parseFloat(match.actual_total);
   const actualMargin = parseFloat(match.actual_margin || match.home_score) - parseFloat(match.away_score || 0);
 
-  let checkmark = '', detailHtml = '';
+  let checkmark = '', resultWord = '', detailHtml = '';
   if (result === 'W') {
     checkmark = '<span class="yest-checkmark" style="color:#4ade80;">✓</span>';
+    resultWord = '<span style="color:#4ade80;font-weight:700;font-size:11px;">WIN</span>';
   } else if (result === 'L') {
     checkmark = '<span class="yest-checkmark" style="color:#ef4444;">✗</span>';
+    resultWord = '<span style="color:#ef4444;font-weight:700;font-size:11px;">LOSS</span>';
   } else if (result === 'P') {
     checkmark = '<span class="yest-checkmark" style="color:#f59e0b;">~</span>';
+    resultWord = '<span style="color:#f59e0b;font-weight:700;font-size:11px;">PUSH</span>';
   }
 
   if (tabKey === 'gt' && !isNaN(actualTotal)) {
     const bet = (r.bet || '').toUpperCase();
-    detailHtml = `<div class="yest-details">Actual: <span class="yest-actual">${actualTotal}</span> · Bet: ${bet} ${fmt(r.market_total,1)}</div>`;
+    detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${actualTotal}</span> · Bet: ${bet} ${fmt(r.market_total,1)}</div>`;
   } else if (tabKey === 'sp') {
     const hs = parseFloat(match.home_score), as_ = parseFloat(match.away_score);
     if (!isNaN(hs) && !isNaN(as_)) {
       const margin = hs - as_;
-      detailHtml = `<div class="yest-details">Final: <span class="yest-actual">${as_} - ${hs}</span> (margin ${margin > 0 ? '+' : ''}${margin.toFixed(0)})</div>`;
+      detailHtml = `<div class="yest-details">${resultWord} · Final: <span class="yest-actual">${as_} - ${hs}</span> · margin ${margin > 0 ? '+' : ''}${margin.toFixed(0)}</div>`;
+    } else {
+      detailHtml = `<div class="yest-details">${resultWord}</div>`;
     }
-  } else if (tabKey === 'tt' && !isNaN(actualTotal)) {
-    detailHtml = `<div class="yest-details">Actual: <span class="yest-actual">${actualTotal}</span></div>`;
+  } else if (tabKey === 'tt') {
+    const teamActual = parseFloat(match.actual_team_total || match.actual_total);
+    const teamBet = (r.bet || '').toUpperCase();
+    const teamLine = fmt(r.market_team_total || r.market_total, 1);
+    if (!isNaN(teamActual)) {
+      detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${teamActual}</span> · Bet: ${teamBet} ${teamLine}</div>`;
+    } else {
+      detailHtml = `<div class="yest-details">${resultWord} · Bet: ${teamBet} ${teamLine}</div>`;
+    }
   }
 
   return `<div class="yest-result">${checkmark}<div>${detailHtml}</div></div>`;
