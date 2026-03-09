@@ -525,7 +525,17 @@ main { padding: 14px; }
 .lm-val.lm-none  { color: var(--muted2); }
 
 /* ── YESTERDAY RESULT ── */
-.yest-sp { line-height: 1.5; }
+.yest-sp { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
+.yest-sp-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.35;
+}
 .yest-result {
   display: flex;
   align-items: center;
@@ -1193,13 +1203,11 @@ async function loadOddsHistory(dateStr) {
 // Abbreviate a team name to initials: "Georgia Southern Eagles" -> "G.S."
 function teamInitials(name) {
   if (!name) return '?';
-  const words = name.replace(/\(.*?\)/g, '').trim().split(/\s+/);
-  // drop common suffixes
-  const skip = new Set(['university','college','state','the','of','at','&','and','a']);
-  const init = words.filter(w => w.length > 0 && !skip.has(w.toLowerCase()))
-                    .map(w => w[0].toUpperCase() + '.')
-                    .join('');
-  return init || words[0][0].toUpperCase() + '.';
+  const words = name.replace(/\(.*?\)/g, '').trim().split(/\s+/)
+                    .filter(w => w.length > 0);
+  // Take first two words only, no skipping
+  const init = words.slice(0, 2).map(w => w[0].toUpperCase() + '.').join('');
+  return init || '?';
 }
 
 function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
@@ -1229,11 +1237,11 @@ function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
     };
 
     if (move === 0) {
-      moveLabel = `${fmtSpread(firstV)} ▸ flat`;
+      moveLabel = `${fmtSpread(firstV)} → flat`;
       dirCls = 'lm-none';
     } else {
       // Two-line: "G.S. +1.5" newline "▸ G.S. -1.5"
-      moveLabel = `${fmtSpread(firstV)}<br>▸ ${fmtSpread(lastV)}`;
+      moveLabel = `${fmtSpread(firstV)}<br>→ ${fmtSpread(lastV)}`;
       const pickHome = parseFloat(row.pred_margin_blend || 0) > 0;
       const movedWithPick = (pickHome && move < 0) || (!pickHome && move > 0);
       dirCls = movedWithPick ? 'lm-good' : 'lm-bad';
@@ -1289,7 +1297,7 @@ function buildYestResult(r, tabKey, histRows) {
 
   if (tabKey === 'gt' && !isNaN(actualTotal)) {
     const bet = (r.bet || '').toUpperCase();
-    detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${actualTotal}</span> · Bet: ${bet} ${fmt(r.market_total,1)}</div>`;
+    detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${actualTotal}</span> · <span style="color:var(--muted)">Bet:</span> <span style="color:#fff">${bet} ${fmt(r.market_total,1)}</span></div>`;
   } else if (tabKey === 'sp') {
     const hs = parseFloat(match.home_score), as_ = parseFloat(match.away_score);
     const pickStr = (r.pick || '').trim();
@@ -1304,18 +1312,19 @@ function buildYestResult(r, tabKey, histRows) {
                        (!isNaN(mktSpread) && parseFloat(r.pred_margin_blend||0) > 0);
     if (!isNaN(hs) && !isNaN(as_)) {
       const actualMarginHome = hs - as_;
-      // Show: PickTeamInitial Score - OtherTeamInitial Score
-      // then show actual spread vs bet line
-      const pickScore  = pickIsHome ? hs  : as_;
-      const otherScore = pickIsHome ? as_ : hs;
-      const pickInit   = pickIsHome ? homeInit : awayInit;
-      const otherInit  = pickIsHome ? awayInit : homeInit;
-      const actualSpread = pickIsHome ? actualMarginHome : -actualMarginHome;
-      const spreadSign = actualSpread >= 0 ? '+' : '';
+      // Away on top, home on bottom, then actual margin
+      const actualMarginAway = -actualMarginHome;
+      const actualMarginSign = actualMarginAway >= 0 ? '+' : '';
+      // Show pick team's actual cover margin
+      const coverMargin = pickIsHome ? actualMarginHome : actualMarginAway;
+      const coverSign = coverMargin >= 0 ? '+' : '';
       detailHtml = `<div class="yest-details yest-sp">` +
-        `${resultWord}<br>` +
-        `<span class="yest-actual">${pickInit} ${pickScore}</span> – ${otherInit} ${otherScore}<br>` +
-        `<span style="font-size:9px;color:var(--muted);">cover: ${spreadSign}${actualSpread.toFixed(1)} vs ${fmt(mktSpread,1)}</span>` +
+        `${resultWord}` +
+        `<div class="yest-sp-scores">` +
+        `<span>${awayInit} ${as_}</span>` +
+        `<span>${homeInit} ${hs}</span>` +
+        `<span>(${coverSign}${coverMargin.toFixed(0)})</span>` +
+        `</div>` +
         `</div>`;
     } else {
       detailHtml = `<div class="yest-details">${resultWord}</div>`;
@@ -1325,7 +1334,7 @@ function buildYestResult(r, tabKey, histRows) {
     const teamBet = (r.bet || '').toUpperCase();
     const teamLine = fmt(r.market_team_total || r.market_total, 1);
     if (!isNaN(teamActual)) {
-      detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${teamActual}</span> · Bet: ${teamBet} ${teamLine}</div>`;
+      detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${teamActual}</span> · <span style="color:var(--muted)">Bet:</span> <span style="color:#fff">${teamBet} ${teamLine}</span></div>`;
     } else {
       detailHtml = `<div class="yest-details">${resultWord} · Bet: ${teamBet} ${teamLine}</div>`;
     }
