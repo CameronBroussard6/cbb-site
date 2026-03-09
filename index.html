@@ -469,6 +469,110 @@ main { padding: 14px; }
 
 
 
+/* ── DAY NAV ── */
+.day-nav-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px 8px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.day-btn {
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.day-btn:hover { border-color: var(--accent); color: var(--text); }
+.day-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.day-btn.tomorrow { border-color: #3b82f6; }
+.day-btn.tomorrow.active { background: #3b82f6; border-color: #3b82f6; }
+
+/* ── LINE MOVEMENT ── */
+.lm-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+.lm-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  white-space: nowrap;
+}
+.lm-bar {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  position: relative;
+  overflow: visible;
+}
+.lm-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+.lm-fill.lm-good  { background: #4ade80; }
+.lm-fill.lm-bad   { background: #ef4444; }
+.lm-fill.lm-none  { background: var(--muted2); }
+.lm-val {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lm-val.lm-good  { color: #4ade80; }
+.lm-val.lm-bad   { color: #ef4444; }
+.lm-val.lm-none  { color: var(--muted2); }
+
+/* ── YESTERDAY RESULT ── */
+.yest-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0 2px;
+}
+.yest-checkmark {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.yest-details {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.yest-actual { font-size: 12px; font-weight: 700; color: var(--text); }
+
+/* ── TOMORROW BANNER ── */
+.tmr-banner {
+  background: #0f1e35;
+  border: 1px solid #1e3a5f;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 10px;
+  color: #60a5fa;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {
   header { padding: 14px 14px 12px; }
@@ -498,12 +602,20 @@ main { padding: 14px; }
       <div class="brand">CTB Analytics</div>
       <div class="site-title">College Basketball Sheet</div>
       <div class="site-date" id="run-date">—</div>
+      <div id="updated"></div>
     </div>
     <div class="header-logo">
       <img src="assets/ctb-logo.png" alt="CTB Analytics Logo">
     </div>
   </div>
 </header>
+
+<!-- Day navigation -->
+<div class="day-nav-wrap">
+  <button class="day-btn" id="btn-yesterday" onclick="switchDay('yesterday')">Yesterday</button>
+  <button class="day-btn active" id="btn-today" onclick="switchDay('today')">Today</button>
+  <button class="day-btn tomorrow" id="btn-tomorrow" onclick="switchDay('tomorrow')">Tomorrow</button>
+</div>
 
 <!-- Record trackers: Game Totals | Team Totals | Spreads -->
 <div class="records-wrap">
@@ -593,10 +705,17 @@ const BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/ma
 
 // Tabs and their CSV file prefixes / display labels
 const TABS = {
-  gt: { label: 'Game Totals',  file: 'game_totals_today',  histFile: 'game_totals_history' },
-  tt: { label: 'Team Totals',  file: 'team_totals_today',  histFile: 'team_totals_history' },
-  sp: { label: 'Spreads',      file: 'spreads_today',      histFile: 'spreads_history'     },
+  gt: { label: 'Game Totals',  todayFile: 'game_totals_today',  tmrFile: 'game_totals_tomorrow',  histFile: 'game_totals_history',  resultCol: 'bet_result'  },
+  tt: { label: 'Team Totals',  todayFile: 'team_totals_today',  tmrFile: 'team_totals_tomorrow',  histFile: 'team_totals_history',  resultCol: 'bet_result'  },
+  sp: { label: 'Spreads',      todayFile: 'spreads_today',      tmrFile: 'spreads_tomorrow',      histFile: 'spreads_history',      resultCol: 'pick_result' },
 };
+
+// Current day view: 'yesterday' | 'today' | 'tomorrow'
+let currentDay = 'today';
+// Cached history rows for yesterday grading
+let historyCache = {};
+// Cached odds history for line movement
+let oddsHistCache = null;
 
 const MODEL_COLS = {
   gt: ['ridge_pred_total', 'recency_pred_total', 'from_team_pred_total', 'ensemble_pred_total', 'elo_sim_pred_total', 'xgb_elo_pred_total'],
@@ -831,10 +950,10 @@ async function loadRecords() {
 }
 
 // ── CARD BUILDER ───────────────────────────────────────────────────────────
-function buildCards(rows, tabKey) {
+function buildCards(rows, tabKey, day='today') {
   if (!rows || !rows.length) {
     const label = TABS[tabKey]?.label || tabKey;
-    return `<div class="empty"><div class="icon">🏀</div><p>No ${label} picks for today.</p></div>`;
+    return `<div class="empty"><div class="icon">🏀</div><p>No ${label} picks.</p></div>`;
   }
 
   const isTBD = t => !t || t.trim() === '' || t.trim().toUpperCase() === 'TBD' || t.trim().toUpperCase() === 'NA';
@@ -844,10 +963,11 @@ function buildCards(rows, tabKey) {
   });
   const sorted = valid.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
 
-  return `<div class="game-cards">${sorted.map((r, i) => buildCard(r, i, tabKey)).join('')}</div>`;
+  const tmrBanner = day === 'tomorrow' ? '<div class="tmr-banner">🔭 Preview — lines and picks will update as tomorrow's odds are posted</div>' : '';
+  return `${tmrBanner}<div class="game-cards">${sorted.map((r, i) => buildCard(r, i, tabKey, day)).join('')}</div>`;
 }
 
-function buildCard(r, rank, tabKey) {
+function buildCard(r, rank, tabKey, day='today') {
   const ag = computeAGScore(r, tabKey);
   const agPct = agBarFill(ag);
   const edgeClass = edgeScoreClass(r.brain_score);
@@ -1036,6 +1156,16 @@ function buildCard(r, rank, tabKey) {
       <div class="gc-consensus-side" style="color:${consensusColor}">${dominantSide}</div>
     </div>`;
 
+  // Line movement (today/tomorrow only)
+  const lineMoveHtml = (day === 'today' || day === 'tomorrow')
+    ? buildLineMoveHtml(r.game_id, tabKey, oddsHistCache)
+    : '';
+
+  // Yesterday result overlay
+  const yestHtml = day === 'yesterday'
+    ? buildYestResult(r, tabKey, historyCache[tabKey])
+    : '';
+
   return `
 <div class="game-card">
   <div class="gc-head">
@@ -1053,6 +1183,8 @@ function buildCard(r, rank, tabKey) {
         <div class="gc-cell-label" style="margin-bottom:2px;">AG Score</div>
         <div class="gc-cell-value es" style="${agScoreStyle(ag)}">${agScoreDisplay(ag)}</div>
         <div class="ag-bar"><div class="ag-bar-track"><div class="ag-bar-fill" style="width:${agPct}%"></div></div></div>
+      ${lineMoveHtml}
+      ${yestHtml}
       </div>
     </div>
     <div class="gc-cell" style="display:flex;align-items:center;justify-content:center;">
@@ -1065,12 +1197,94 @@ function buildCard(r, rank, tabKey) {
 </div>`;
 }
 
+// ── LINE MOVEMENT DISPLAY ─────────────────────────────────────────────────
+async function loadOddsHistory(dateStr) {
+  if (oddsHistCache) return oddsHistCache;
+  const rows = await fetchCSV(`${BASE}/data/odds_history_${dateStr}.csv`);
+  oddsHistCache = rows || [];
+  return oddsHistCache;
+}
+
+function buildLineMoveHtml(gameId, tabKey, oddsHist) {
+  if (!oddsHist || oddsHist.length === 0) return '';
+  const gameRows = oddsHist.filter(r => r.game_id === gameId);
+  if (gameRows.length < 2) return '';
+
+  const sorted = gameRows.slice().sort((a,b) => a.run_time > b.run_time ? 1 : -1);
+  const first = sorted[0];
+  const last  = sorted[sorted.length - 1];
+
+  let move, moveLabel, isFav;
+  if (tabKey === 'sp') {
+    const firstV = parseFloat(first.market_spread_home);
+    const lastV  = parseFloat(last.market_spread_home);
+    if (isNaN(firstV) || isNaN(lastV)) return '';
+    move = lastV - firstV;
+    moveLabel = move === 0 ? 'Flat' : (move > 0 ? '+' : '') + move.toFixed(1) + ' spread';
+  } else {
+    const firstV = parseFloat(first.market_total);
+    const lastV  = parseFloat(last.market_total);
+    if (isNaN(firstV) || isNaN(lastV)) return '';
+    move = lastV - firstV;
+    moveLabel = move === 0 ? 'Flat' : (move > 0 ? '+' : '') + move.toFixed(1) + ' O/U';
+  }
+
+  const absMv = Math.abs(move);
+  const barPct = Math.min(absMv / 3 * 100, 100); // 3pt = full bar
+  const cls = move === 0 ? 'lm-none' : (absMv > 0 ? 'lm-good' : 'lm-bad');
+  // Actually good/bad depends on bet direction — just show magnitude + direction for now
+  const dirCls = move === 0 ? 'lm-none' : move > 0 ? 'lm-good' : 'lm-bad';
+
+  return `<div class="lm-wrap">
+    <div class="lm-label">Line</div>
+    <div class="lm-bar"><div class="lm-fill ${dirCls}" style="width:${barPct}%;${move < 0 ? 'right:0;left:auto;' : 'left:0;'}"></div></div>
+    <div class="lm-val ${dirCls}">${moveLabel}</div>
+  </div>`;
+}
+
+// ── YESTERDAY RESULT DISPLAY ─────────────────────────────────────────────
+function buildYestResult(r, tabKey, histRows) {
+  if (!histRows || !histRows.length) return '';
+  const match = histRows.find(h => h.game_id === r.game_id);
+  if (!match) return '';
+
+  const resultCol = TABS[tabKey].resultCol;
+  const result = (match[resultCol] || '').toUpperCase();
+  if (!result || result === '') return '';
+
+  const actualTotal = parseFloat(match.actual_total);
+  const actualMargin = parseFloat(match.actual_margin || match.home_score) - parseFloat(match.away_score || 0);
+
+  let checkmark = '', detailHtml = '';
+  if (result === 'W') {
+    checkmark = '<span class="yest-checkmark" style="color:#4ade80;">✓</span>';
+  } else if (result === 'L') {
+    checkmark = '<span class="yest-checkmark" style="color:#ef4444;">✗</span>';
+  } else if (result === 'P') {
+    checkmark = '<span class="yest-checkmark" style="color:#f59e0b;">~</span>';
+  }
+
+  if (tabKey === 'gt' && !isNaN(actualTotal)) {
+    const bet = (r.bet || '').toUpperCase();
+    detailHtml = `<div class="yest-details">Actual: <span class="yest-actual">${actualTotal}</span> · Bet: ${bet} ${fmt(r.market_total,1)}</div>`;
+  } else if (tabKey === 'sp') {
+    const hs = parseFloat(match.home_score), as_ = parseFloat(match.away_score);
+    if (!isNaN(hs) && !isNaN(as_)) {
+      const margin = hs - as_;
+      detailHtml = `<div class="yest-details">Final: <span class="yest-actual">${as_} - ${hs}</span> (margin ${margin > 0 ? '+' : ''}${margin.toFixed(0)})</div>`;
+    }
+  } else if (tabKey === 'tt' && !isNaN(actualTotal)) {
+    detailHtml = `<div class="yest-details">Actual: <span class="yest-actual">${actualTotal}</span></div>`;
+  }
+
+  return `<div class="yest-result">${checkmark}<div>${detailHtml}</div></div>`;
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 async function init() {
   const dates = candidateDates(); // [today, yesterday, tomorrow] in Central
   document.getElementById('run-date').textContent = fmtDateOrdinal(dates[0]);
 
-  // Try to get last-run timestamp from meta.json written by pipeline
   const meta = await fetch(`${BASE}/meta.json?t=` + Date.now())
     .then(r => r.ok ? r.json() : null).catch(() => null);
   if (meta && meta.run_timestamp) {
@@ -1078,34 +1292,61 @@ async function init() {
     if (el) el.textContent = fmtLastRun(meta.run_timestamp);
   }
 
-  let sawData = false;
+  // Pre-load history for yesterday grading
+  for (const [tabKey, cfg] of Object.entries(TABS)) {
+    const rows = await fetchCSV(`${BASE}/data/${cfg.histFile}.csv`);
+    historyCache[tabKey] = rows || [];
+  }
+
+  // Pre-load odds history for line movement
+  oddsHistCache = await fetchCSV(`${BASE}/data/odds_history_${dates[0]}.csv`) || [];
+
+  await loadDay('today');
+  loadRecords();
+}
+
+async function loadDay(day) {
+  currentDay = day;
+  const dates = candidateDates(); // [today, yesterday, tomorrow]
+  const dateStr = day === 'today' ? dates[0] : day === 'yesterday' ? dates[1] : dates[2];
+
+  // Update day button styles
+  ['yesterday','today','tomorrow'].forEach(d => {
+    const btn = document.getElementById(`btn-${d}`);
+    if (btn) btn.classList.toggle('active', d === day);
+  });
+
+  // Update header date
+  document.getElementById('run-date').textContent = fmtDateOrdinal(dateStr);
 
   for (const [tabKey, cfg] of Object.entries(TABS)) {
     const panel = document.getElementById(`panel-${tabKey}`);
     panel.innerHTML = `<div class="empty"><div class="icon">⟳</div><p>Loading…</p></div>`;
 
-    // Files are static names (no date suffix) — just fetch directly
-    let rows = await fetchCSV(`${BASE}/data/${cfg.file}.csv`);
+    let rows = null;
+    if (day === 'today') {
+      rows = await fetchCSV(`${BASE}/data/${cfg.todayFile}.csv`);
+    } else if (day === 'tomorrow') {
+      rows = await fetchCSV(`${BASE}/data/${cfg.tmrFile}.csv`);
+    } else {
+      // Yesterday: find in history by date
+      const hist = historyCache[tabKey] || [];
+      rows = hist.filter(r => r.date === dateStr);
+    }
 
     if (rows && rows.length) {
-      sawData = true;
       document.getElementById(`ct-${tabKey}`).textContent = String(rows.length);
-      panel.innerHTML = buildCards(rows, tabKey);
+      panel.innerHTML = buildCards(rows, tabKey, day);
     } else {
       document.getElementById(`ct-${tabKey}`).textContent = '0';
-      const tried = `${cfg.file}.csv`;
-      panel.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No ${cfg.label} data yet.</p><p style="font-size:10px;margin-top:8px;color:#707784;font-family:monospace;">Tried: ${tried}</p></div>`;
+      let msg = day === 'tomorrow' ? 'Tomorrow's picks will appear as games are confirmed.' : `No ${cfg.label} data for ${dateStr}.`;
+      panel.innerHTML = `<div class="empty"><div class="icon">${day === 'tomorrow' ? '🔭' : '📭'}</div><p>${msg}</p></div>`;
     }
   }
+}
 
-  // If no meta.json, fall back to now if we saw data
-  if (!meta && sawData) {
-    const el = document.getElementById('updated');
-    if (el) el.textContent = fmtLastRun(new Date().toISOString());
-  }
-
-  // Load W-L records from history CSVs
-  loadRecords();
+async function switchDay(day) {
+  await loadDay(day);
 }
 
 // ── TAB SWITCHING ──────────────────────────────────────────────────────────
@@ -1128,6 +1369,7 @@ if (hashTab && document.querySelector(`.tab[data-tab="${hashTab}"]`)) {
 }
 
 init();
+
 </script>
 </body>
 </html>
