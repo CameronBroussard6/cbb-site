@@ -420,7 +420,6 @@ main { padding: 14px; }
 }
 .gc-cell {
   padding: 6px 8px;
-  border-right: 1px solid var(--border);
   min-width: 0;
 }
 .gc-cell:last-child { border-right: none; }
@@ -505,12 +504,6 @@ main { padding: 14px; }
   padding-top: 5px;
   border-top: 1px solid var(--border);
 }
-.lm-header-val {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
 .lm-label {
   font-size: 7px;
   font-weight: 700;
@@ -521,16 +514,18 @@ main { padding: 14px; }
 }
 .lm-val {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  white-space: nowrap;
   text-align: center;
+  line-height: 1.4;
+  word-break: break-word;
 }
 .lm-val.lm-good  { color: #4ade80; }
 .lm-val.lm-bad   { color: #ef4444; }
 .lm-val.lm-none  { color: var(--muted2); }
 
 /* ── YESTERDAY RESULT ── */
+.yest-sp { line-height: 1.5; }
 .yest-result {
   display: flex;
   align-items: center;
@@ -703,6 +698,7 @@ let currentDay = 'today';
 let historyCache = {};
 // Cached odds history for line movement
 let oddsHistCache = null;
+let oddsHistByDate = {};
 
 const MODEL_COLS = {
   gt: ['ridge_pred_total', 'recency_pred_total', 'from_team_pred_total', 'ensemble_pred_total', 'elo_sim_pred_total', 'xgb_elo_pred_total'],
@@ -1144,8 +1140,10 @@ function buildCard(r, rank, tabKey, day='today') {
     </div>`;
 
   // Line movement (today/tomorrow only)
+  const lmDate = day === 'tomorrow' ? candidateDates()[2] : candidateDates()[0];
+  const lmHist = (oddsHistByDate && oddsHistByDate[lmDate]) ? oddsHistByDate[lmDate] : oddsHistCache;
   const lineMoveHtml = (day === 'today' || day === 'tomorrow')
-    ? buildLineMoveHtml(r.game_id, tabKey, oddsHistCache, r)
+    ? buildLineMoveHtml(r.game_id, tabKey, lmHist, r)
     : '';
 
   // Yesterday result overlay
@@ -1231,14 +1229,12 @@ function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
     };
 
     if (move === 0) {
-      moveLabel = `${fmtSpread(firstV)} → flat`;
+      moveLabel = `${fmtSpread(firstV)} ▸ flat`;
       dirCls = 'lm-none';
     } else {
-      moveLabel = `${fmtSpread(firstV)} → ${fmtSpread(lastV)}`;
-      // Good = line moved in direction of our pick
-      // Our pick direction: pred_margin_blend > 0 means we like home
+      // Two-line: "G.S. +1.5" newline "▸ G.S. -1.5"
+      moveLabel = `${fmtSpread(firstV)}<br>▸ ${fmtSpread(lastV)}`;
       const pickHome = parseFloat(row.pred_margin_blend || 0) > 0;
-      // Home spread going more negative = home getting worse odds = bad for home pick
       const movedWithPick = (pickHome && move < 0) || (!pickHome && move > 0);
       dirCls = movedWithPick ? 'lm-good' : 'lm-bad';
     }
@@ -1261,10 +1257,8 @@ function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
   }
 
   return `<div class="lm-wrap">
-    <div class="lm-header-val">
-      <div class="lm-label">LINE MVMT</div>
-      <div class="lm-val ${dirCls}">${moveLabel}</div>
-    </div>
+    <div class="lm-label">LINE MVMT</div>
+    <div class="lm-val ${dirCls}">${moveLabel}</div>
   </div>`;
 }
 
@@ -1298,14 +1292,36 @@ function buildYestResult(r, tabKey, histRows) {
     detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${actualTotal}</span> · Bet: ${bet} ${fmt(r.market_total,1)}</div>`;
   } else if (tabKey === 'sp') {
     const hs = parseFloat(match.home_score), as_ = parseFloat(match.away_score);
+    const pickStr = (r.pick || '').trim();
+    const mktSpread = parseFloat(r.market_spread_home);
+    // Determine if our pick was the home team (negative spread = home fav)
+    // pick string contains team name + spread, e.g. "Eastern Washington Eagles -3"
+    const homeTeam = (r.home_team || '');
+    const awayTeam = (r.away_team || '');
+    const homeInit = teamInitials(homeTeam);
+    const awayInit = teamInitials(awayTeam);
+    const pickIsHome = pickStr.includes(homeTeam.split(' ')[0]) || 
+                       (!isNaN(mktSpread) && parseFloat(r.pred_margin_blend||0) > 0);
     if (!isNaN(hs) && !isNaN(as_)) {
-      const margin = hs - as_;
-      detailHtml = `<div class="yest-details">${resultWord} · Final: <span class="yest-actual">${as_} - ${hs}</span> · margin ${margin > 0 ? '+' : ''}${margin.toFixed(0)}</div>`;
+      const actualMarginHome = hs - as_;
+      // Show: PickTeamInitial Score - OtherTeamInitial Score
+      // then show actual spread vs bet line
+      const pickScore  = pickIsHome ? hs  : as_;
+      const otherScore = pickIsHome ? as_ : hs;
+      const pickInit   = pickIsHome ? homeInit : awayInit;
+      const otherInit  = pickIsHome ? awayInit : homeInit;
+      const actualSpread = pickIsHome ? actualMarginHome : -actualMarginHome;
+      const spreadSign = actualSpread >= 0 ? '+' : '';
+      detailHtml = `<div class="yest-details yest-sp">` +
+        `${resultWord}<br>` +
+        `<span class="yest-actual">${pickInit} ${pickScore}</span> – ${otherInit} ${otherScore}<br>` +
+        `<span style="font-size:9px;color:var(--muted);">cover: ${spreadSign}${actualSpread.toFixed(1)} vs ${fmt(mktSpread,1)}</span>` +
+        `</div>`;
     } else {
       detailHtml = `<div class="yest-details">${resultWord}</div>`;
     }
   } else if (tabKey === 'tt') {
-    const teamActual = parseFloat(match.actual_team_total || match.actual_total);
+    const teamActual = parseFloat(match.actual_team_pts || match.actual_team_total || match.actual_total);
     const teamBet = (r.bet || '').toUpperCase();
     const teamLine = fmt(r.market_team_total || r.market_total, 1);
     if (!isNaN(teamActual)) {
@@ -1336,8 +1352,13 @@ async function init() {
     historyCache[tabKey] = rows || [];
   }
 
-  // Pre-load odds history for line movement
-  oddsHistCache = await fetchCSV(`${BASE}/data/odds_history_${dates[0]}.csv`) || [];
+  // Pre-load odds history for line movement (today + tomorrow keyed by date)
+  oddsHistByDate = {};
+  const todayRows = await fetchCSV(`${BASE}/data/odds_history_${dates[0]}.csv`) || [];
+  const tmrRows   = await fetchCSV(`${BASE}/data/odds_history_${dates[2]}.csv`) || [];
+  oddsHistByDate[dates[0]] = todayRows;
+  oddsHistByDate[dates[2]] = tmrRows;
+  oddsHistCache = todayRows; // keep for backwards compat
 
   await loadDay('today');
   loadRecords();
