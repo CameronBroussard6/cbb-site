@@ -422,6 +422,7 @@ main { padding: 14px; }
   padding: 6px 8px;
   min-width: 0;
 }
+.gc-cell:first-child { border-right: 1px solid var(--border); }
 .gc-cell:last-child { border-right: none; }
 .gc-cell-label {
   font-size: 8px;
@@ -1237,7 +1238,7 @@ function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
     };
 
     if (move === 0) {
-      moveLabel = `${fmtSpread(firstV)} → flat`;
+      moveLabel = `${fmtSpread(firstV)}<br>→ flat`;
       dirCls = 'lm-none';
     } else {
       // Two-line: "G.S. +1.5" newline "▸ G.S. -1.5"
@@ -1316,14 +1317,36 @@ function buildYestResult(r, tabKey, histRows) {
       const actualMarginAway = -actualMarginHome;
       const actualMarginSign = actualMarginAway >= 0 ? '+' : '';
       // Show pick team's actual cover margin
-      const coverMargin = pickIsHome ? actualMarginHome : actualMarginAway;
-      const coverSign = coverMargin >= 0 ? '+' : '';
+      // Always show margin from pick direction:
+      // If we picked home (fav/dog), positive = home won by that much
+      // If we picked away, positive = away won by that much
+      // We want to show it as: positive if pick covered, negative if not
+      const rawCover = pickIsHome ? actualMarginHome : actualMarginAway;
+      // rawCover > 0 means our pick team won outright
+      // But we need to show it relative to the spread:
+      // e.g. picked -4.5, won by 13 → show -13 (they covered as the minus side)
+      // e.g. picked +4.5, lost by 13 → show +13 (we were hoping for +, got smoked)
+      // Rule: always show the sign as it looked FROM OUR PICK'S PERSPECTIVE
+      // If we picked the minus side: show negative when they won, positive when lost
+      // If we picked the plus side: show positive when they won/lost-less-than-spread
+      const pickedMinus = pickIsHome ? mktSpread < 0 : mktSpread > 0;
+      // actualMarginHome: positive = home won
+      // From pick perspective: if minus pick = home, we want -(home margin) to show dominance
+      let displayMargin;
+      if (pickedMinus) {
+        // minus pick: if home is minus pick, home won by X = -X shown (they dominated)
+        displayMargin = pickIsHome ? -actualMarginHome : actualMarginHome;
+      } else {
+        // plus pick: if away is plus pick, away lost by X = +X shown (showed +side)  
+        displayMargin = pickIsHome ? actualMarginHome : -actualMarginHome;
+      }
+      const dSign = displayMargin >= 0 ? '+' : '';
       detailHtml = `<div class="yest-details yest-sp">` +
         `${resultWord}` +
         `<div class="yest-sp-scores">` +
         `<span>${awayInit} ${as_}</span>` +
         `<span>${homeInit} ${hs}</span>` +
-        `<span>(${coverSign}${coverMargin.toFixed(0)})</span>` +
+        `<span>(${dSign}${displayMargin.toFixed(0)})</span>` +
         `</div>` +
         `</div>`;
     } else {
