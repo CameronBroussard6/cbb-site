@@ -963,7 +963,7 @@ function buildCards(rows, tabKey, day='today') {
   });
   const sorted = valid.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
 
-  const tmrBanner = day === 'tomorrow' ? '<div class="tmr-banner">🔭 Preview — lines and picks will update as tomorrow's odds are posted</div>' : '';
+  const tmrBanner = day === 'tomorrow' ? `<div class="tmr-banner">🔭 Preview — lines and picks will update as tomorrow's odds are posted</div>` : '';
   return `${tmrBanner}<div class="game-cards">${sorted.map((r, i) => buildCard(r, i, tabKey, day)).join('')}</div>`;
 }
 
@@ -1339,7 +1339,7 @@ async function loadDay(day) {
       panel.innerHTML = buildCards(rows, tabKey, day);
     } else {
       document.getElementById(`ct-${tabKey}`).textContent = '0';
-      let msg = day === 'tomorrow' ? 'Tomorrow's picks will appear as games are confirmed.' : `No ${cfg.label} data for ${dateStr}.`;
+      let msg = day === 'tomorrow' ? `Tomorrow's picks will appear as games are confirmed.` : `No ${cfg.label} data for ${dateStr}.`;
       panel.innerHTML = `<div class="empty"><div class="icon">${day === 'tomorrow' ? '🔭' : '📭'}</div><p>${msg}</p></div>`;
     }
   }
