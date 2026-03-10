@@ -1,679 +1,1440 @@
-# ============================================================
-# conference_tournament_projector.R
-#
-# Projects winners of all 2026 conference tournaments using
-# the existing spreads model (XGB + ELO) + Monte Carlo simulation.
-#
-# Inputs:
-#   E:/000_CBB/data/model/bundle_NOLEAK_spreads_frozen_up_to_2026-01-14.rds
-#   E:/000_CBB/data/model/bundle_NOLEAK_spreads_frozen_up_to_2026-01-14.json
-#   E:/000_CBB/data/model/team_box_raw_2023plus.rds  (for team name -> ID lookup)
-#   E:/000_CBB/data/cache/cbb_cache_derived_latest.rds
-#   E:/000_CBB/tournament/2026_conference_tournament_games.csv
-#
-# Outputs:
-#   E:/000_CBB/tournament/tournament_projections.csv    (per-game spreads + win probs)
-#   E:/000_CBB/tournament/tournament_winners.csv        (winner + probability per conf)
-#   E:/000_CBB/tournament/tournament_full_odds.csv      (all teams, all conferences, survival probs)
-#
-# Run:  Rscript E:/000_CBB/tournament/conference_tournament_projector.R
-# ============================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>CTB Analytics — College Basketball Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0d0f12;
+  --surface:   #161920;
+  --surface2:  #1e2229;
+  --border:    #2a2f38;
+  --text:      #e8eaf0;
+  --muted:     #9097a3;
+  --muted2:    #707784;
 
-rm(list = ls())
-WD <- "C:/Data_Drive"
+  /* CBB accent: rose/pink instead of green — visually distinct from NBA */
+  --accent:    #f43f7a;
+  --accent-d:  #4a1128;
+  --accent-bg: #2a1120;
 
+  /* Blue for card borders / over badge — kept from old CBB */
+  --blue:      #3b82f6;
+  --blue-d:    #1e3a5f;
+  --blue-bg:   #0f1e35;
 
-suppressPackageStartupMessages({
-  library(dplyr)
-  library(readr)
-  library(tibble)
-  library(lubridate)
-  library(fs)
-  library(stringr)
-  library(xgboost)
-  library(purrr)
-})
-
-# ── CONFIG ────────────────────────────────────────────────────────────────────
-N_SIM        <- 10000          # Monte Carlo simulations per tournament
-TARGET_DATE  <- as.Date(Sys.Date())     # "as-of" date — uses today; override if needed
-SEASON       <- 2025           # season in cache (2025 = 2024-25)
-TOURN_CSV    <- "C:/Data_Drive/tournament/2026_conference_tournament_games.csv"
-OUT_DIR      <- "C:/Data_Drive/tournament"
-
-CACHE_RDS  <- "C:/Data_Drive/tournament/data/cache/cbb_cache_derived_latest.rds"
-# team_box_raw from ESPN pull — 2025_2026 season
-RAW_RDS    <- "C:/Data_Drive/tournament/data/raw/team_box_raw_2025_2026.rds"
-MODEL_RDS  <- "C:/Data_Drive/tournament/data/model/bundle_NOLEAK_spreads_frozen_up_to_2026-01-14.rds"
-MODEL_JSON <- "C:/Data_Drive/tournament/data/model/bundle_NOLEAK_spreads_frozen_up_to_2026-01-14.json"
-
-dir_create(OUT_DIR, recurse = TRUE)
-
-cat("=== CONFERENCE TOURNAMENT PROJECTOR ===\n")
-cat("Target date:", as.character(TARGET_DATE), "\n")
-cat("Simulations per tournament:", N_SIM, "\n\n")
-
-# ── LOAD DATA ─────────────────────────────────────────────────────────────────
-cat("Loading cache...\n")
-stopifnot(file.exists(CACHE_RDS))
-cache  <- readRDS(CACHE_RDS)
-
-cat("Loading model bundle...\n")
-stopifnot(file.exists(MODEL_RDS))
-bundle <- readRDS(MODEL_RDS)
-if (file.exists(MODEL_JSON)) {
-  cat("  Loading XGB from JSON sidecar...\n")
-  bundle$xgb$fit <- xgb.load(MODEL_JSON)
+  --warn:      #f59e0b;
+  --danger:    #ef4444;
+  --gold:      #d4af37;
+  --mono:      'Roboto Mono', monospace;
+  --mono-settings: 'zero' 0;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --r:         8px;
 }
-# Recover booster if needed
-if (is.list(bundle$xgb$fit) && !inherits(bundle$xgb$fit, "xgb.Booster")) {
-  tmp <- tempfile(fileext = ".json")
-  xgb.save(bundle$xgb$fit, tmp)
-  bundle$xgb$fit <- xgb.load(tmp)
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
 }
 
-cat("Loading team name lookup...\n")
-stopifnot(file.exists(RAW_RDS))
-raw_rds <- readRDS(RAW_RDS)
-# Build team_name -> team_id lookup from raw box scores
-# team names in tournament CSV may differ from ESPN names — we'll fuzzy match
-name_col <- intersect(c("team_display_name","team_name","school","display_name","team"), names(raw_rds))[1]
-if (is.na(name_col)) stop("Cannot find team name column in team_box_raw. Check column names: ", paste(names(raw_rds)[1:10], collapse=", "))
-id_col <- intersect(c("team_id","teamId"), names(raw_rds))[1]
-team_lookup <- raw_rds %>%
-  select(team_id = all_of(id_col), team_name = all_of(name_col)) %>%
-  distinct() %>%
-  mutate(team_name = as.character(team_name),
-         team_id   = as.character(team_id),
-         name_clean = str_to_lower(str_trim(team_name)))
-
-cat("  Team lookup rows:", nrow(team_lookup), "\n\n")
-
-cat("Loading tournament bracket...\n")
-stopifnot(file.exists(TOURN_CSV))
-bracket_raw <- read_csv(TOURN_CSV, show_col_types = FALSE)
-cat("  Total games:", nrow(bracket_raw), "\n")
-cat("  Completed:", sum(bracket_raw$status == "completed", na.rm=TRUE), "\n")
-cat("  Scheduled:", sum(bracket_raw$status != "completed", na.rm=TRUE), "\n\n")
-
-# ── ELO SETUP ─────────────────────────────────────────────────────────────────
-P        <- bundle$locked_params
-ELO_K    <- P$ELO_K
-ELO_HCA  <- P$ELO_HCA
-ELO_INIT <- P$ELO_INIT
-
-exp_home         <- function(eh, ea) 1 / (1 + 10^(((ea) - (eh + ELO_HCA)) / 400))
-exp_home_neutral <- function(eh, ea) 1 / (1 + 10^((ea - eh) / 400))  # no HCA
-
-mov_multiplier <- function(margin, elo_diff) {
-  m    <- abs(margin)
-  mult <- log(m + 1) * (2.2 / ((abs(elo_diff) * 0.001) + 2.2))
-  mult[is.na(mult) | is.infinite(mult) | is.nan(mult)] <- 1
-  mult
+/* ── HEADER ── */
+header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.header-copy { min-width: 0; flex: 1 1 auto; }
+.brand {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+.site-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+.site-date {
+  font-size: 12px;
+  font-style: italic;
+  color: #ffffff;
+  margin-top: 4px;
+}
+#updated {
+  font-size: 10px;
+  font-style: normal;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.header-logo {
+  flex: 0 0 auto;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
-# Build ELO through all historical completed games up to TARGET_DATE
-cat("Building ELO ratings through", as.character(TARGET_DATE), "...\n")
-elo_env <- new.env(parent = emptyenv())
-getr <- function(team) {
-  if (exists(team, envir = elo_env, inherits = FALSE)) get(team, envir = elo_env)
-  else ELO_INIT
+/* ── RECORD TRACKERS ── */
+.records-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
-setr <- function(team, val) assign(team, val, envir = elo_env)
-
-games_hist <- cache$games_basic %>%
-  mutate(date          = as.Date(date),
-         game_id       = as.character(game_id),
-         home_team_id  = as.character(home_team_id),
-         away_team_id  = as.character(away_team_id),
-         season        = as.integer(season)) %>%
-  filter(season == SEASON, date < TARGET_DATE) %>%
-  arrange(date, game_id)
-
-for (i in seq_len(nrow(games_hist))) {
-  h  <- games_hist$home_team_id[i]
-  a  <- games_hist$away_team_id[i]
-  eh <- getr(h);  ea <- getr(a)
-  pH <- exp_home(eh, ea)
-  margin <- games_hist$home_points[i] - games_hist$away_points[i]
-  winH   <- if (margin > 0) 1 else 0
-  mult   <- mov_multiplier(margin, (eh + ELO_HCA) - ea)
-  setr(h, eh + ELO_K * mult * (winH - pH))
-  setr(a, ea + ELO_K * mult * ((1 - winH) - (1 - pH)))
+.records-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px 0;
 }
-cat("  ELO built for", length(ls(elo_env)), "teams.\n\n")
+.records-header-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.records-header-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  white-space: nowrap;
+}
+.records {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.rec {
+  padding: 6px 16px 12px;
+  border-right: 1px solid var(--border);
+  border-left: 2px solid var(--blue);
+}
+.rec:first-child { border-left: 2px solid var(--blue); }
+.rec:last-child { border-right: none; }
+.rec-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 5px;
+  text-align: center;
+}
+.rec-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+.rec-row-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9097a3;
+  width: 30px;
+  flex-shrink: 0;
+}
+.rec-row-label.tier-1 { color: #f5c542; }
+.rec-row-label.tier-5 { color: #f0a05a; }
+.rec-row-label.tier-all { color: #cdd2da; }
+.rec-row-val {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  flex: 1;
+}
+.rec-row-val.tier-1 { color: #f5c542; font-size: 10px; }
+.rec-row-val.tier-5 { color: #f0a05a; font-size: 10px; }
+.rec-row-pct {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #cdd2da;
+}
+.rec-row-pct.tier-1 { color: #f5c542; }
+.rec-row-pct.tier-5 { color: #f0a05a; }
 
-
-# ── TEAM STAT HELPER ──────────────────────────────────────────────────────────
-tg <- cache$team_game
-team_state_asof <- function(team_id_in) {
-  tg %>%
-    filter(as.character(team_id) == team_id_in,
-           as.integer(season)    == SEASON,
-           as.Date(date)         < TARGET_DATE) %>%
-    arrange(date, game_id) %>%
-    slice_tail(n = 1)
+/* ── TABS ── */
+.tabs-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 12px 10px;
+}
+.tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.tab {
+  padding: 10px 14px;
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.15s ease;
+  user-select: none;
+  text-align: center;
+}
+.tab:hover { color: var(--text); border-color: #3a404b; }
+/* Rose/pink active — immediately different from NBA green */
+.tab.active {
+  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: inset 0 0 0 1px rgba(244,63,122,0.15);
+}
+.tab-ct {
+  display: inline-block;
+  min-width: 22px;
+  margin-left: 7px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #2b313b;
+  color: #c9d0db;
+  font-size: 10px;
+  font-family: var(--mono);
+  vertical-align: middle;
+}
+.tab.active .tab-ct {
+  background: var(--accent);
+  color: #fff;
 }
 
-# ── MODEL 09: SimELO-Recency ───────────────────────────────────────────────────
-spread_hist  <- cache$spread_hist
-simelo_obs   <- cache$spread_new$simelo_obs
-SIM_ELO_TOL  <- 75
-MIN_SIM_N    <- 3
+/* ── MAIN / PANELS ── */
+main { padding: 14px; }
+.panel { display: none; }
+.panel.active { display: block; }
 
-safe_mean <- function(x) { x <- x[is.finite(x)]; if (!length(x)) NA_real_ else mean(x) }
-safe_sd   <- function(x) { x <- x[is.finite(x)]; if (length(x) <= 1) NA_real_ else sd(x) }
+/* ── BET BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 5px 8px 5px 7px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  line-height: 1.05;
+  white-space: nowrap;
+}
+.b-over {
+  background: #14532d;
+  color: #4ade80;
+  border: 1px solid #166534;
+}
+.b-under {
+  background: #1e3a5f;
+  color: #93c5fd;
+  border: 1px solid #1d4ed8;
+}
+.b-home {
+  background: var(--accent-bg);
+  color: #fda4c0;
+  border: 1px solid #831843;
+}
+.b-away {
+  background: #1a1500;
+  color: #fde68a;
+  border: 1px solid #78350f;
+}
+.b-pass {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.badge-arrow { font-size: 13px; font-weight: 700; line-height: 1; padding-top: 1px; }
+.badge-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.badge-main { font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: #ffffff; }
+.badge-sub  { font-size: 8px; opacity: 0.85; line-height: 1; }
 
-team_pre_elo_asof <- function(team_id_in, season_in, target_date) {
-  x <- spread_hist %>%
-    filter(as.character(team_id) == team_id_in,
-           as.integer(season)    == season_in,
-           as.Date(date)         < as.Date(target_date)) %>%
-    arrange(date, game_key)
-  if (nrow(x) == 0) return(NA_real_)
-  as.numeric(x$team_pre_elo[nrow(x)])
+/* ── SCORE STYLES ── */
+.es { font-family: var(--mono); font-size: 13px; font-weight: 600; font-feature-settings: "zero" 0; }
+.ep { color: var(--blue); }
+.en { color: #f87171; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+.empty .icon { font-size: 28px; margin-bottom: 10px; }
+
+/* ═══════════════════════════════════════════════════
+   CBB GAME CARDS — compact, mobile-first
+   Each card = one game's pick
+═══════════════════════════════════════════════════ */
+.game-cards { display: flex; flex-direction: column; gap: 10px; }
+
+.game-card {
+  background: var(--surface);
+  /* Blue left border — CBB visual signature */
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--r);
+  overflow: hidden;
 }
 
-build_sim_features_one <- function(team_id_in, opp_target_elo, as_of_date, is_home_in = NULL) {
-  x <- simelo_obs %>%
-    filter(as.character(team_id) == team_id_in,
-           as.Date(date) < as.Date(as_of_date),
-           !is.na(opp_pre_elo), !is.na(margin_resid_team))
-  if (!is.null(is_home_in)) x <- x %>% filter(is_home == is_home_in)
-  x <- x %>% mutate(sim_gap = abs(opp_pre_elo - opp_target_elo)) %>%
-    filter(sim_gap <= SIM_ELO_TOL) %>% arrange(desc(date), desc(game_key))
-  last5  <- x %>% slice_head(n = 5)
-  last10 <- x %>% slice_head(n = 10)
-  tibble(
-    sim_resid5  = if (nrow(last5)  >= MIN_SIM_N) safe_mean(last5$margin_resid_team)  else NA_real_,
-    sim_resid10 = if (nrow(last10) >= MIN_SIM_N) safe_mean(last10$margin_resid_team) else NA_real_,
-    sim_med5    = if (nrow(last5)  >= MIN_SIM_N) median(last5$margin_resid_team, na.rm=TRUE) else NA_real_,
-    sim_gap5    = if (nrow(last5)  >= MIN_SIM_N) safe_mean(last5$sim_gap) else NA_real_
-  )
+/* Top strip: matchup + badge */
+.gc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.gc-matchup { min-width: 0; flex: 1; }
+.gc-rank {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+.gc-teams {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+.gc-teams .away { color: #ffffff; font-weight: 500; display: block; }
+.gc-teams .home-team { display: block; }
+.gc-teams .vs   { color: var(--muted2); font-size: 9px; display: block; line-height: 1; margin: 1px 0; }
+
+/* Body: 2-column layout - scores left, models right */
+.gc-body {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 0;
 }
 
-pred_simelo <- function(hid, aid, game_date) {
-  s <- if (month(as.Date(game_date)) >= 7) year(as.Date(game_date)) else year(as.Date(game_date)) - 1L
-  home_elo <- team_pre_elo_asof(hid, s, game_date)
-  away_elo <- team_pre_elo_asof(aid, s, game_date)
-  if (!is.finite(home_elo) || !is.finite(away_elo)) return(NA_real_)
-  fh <- build_sim_features_one(hid, away_elo, game_date, 1L)
-  fa <- build_sim_features_one(aid, home_elo, game_date, 0L)
-  exp_margin <- (home_elo - away_elo) / 28  # neutral site: no HCA (+75)
-  exp_margin +
-    0.60 * coalesce(fh$sim_resid5  - fa$sim_resid5,  0) +
-    0.40 * coalesce(fh$sim_resid10 - fa$sim_resid10, 0) +
-    0.15 * coalesce(fh$sim_med5    - fa$sim_med5,    0) -
-    0.05 * coalesce(fh$sim_gap5    - fa$sim_gap5,    0) / 25
+/* Model predictions mini table */
+.gc-mkt-row, .gc-pred-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  margin-top: 3px;
+}
+.gc-mkt-lbl, .gc-pred-lbl {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  min-width: 0;
+  text-align: left;
+}
+.gc-mkt-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-feature-settings: "zero" 0;
+}
+.gc-market-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.gc-market-lbl {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.gc-market-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  font-feature-settings: "zero" 0;
+}
+.gc-market-val.pred-over { color: #4ade80; }
+.gc-market-val.pred-under { color: #93c5fd; }
+.gc-market-val.sp-agree { color: #4ade80; }
+.gc-market-val.sp-disagree { color: #ef4444; }
+.b-spread { background: #7c3500; border: 1px solid var(--warn); }
+.gc-pred-val { font-family: var(--mono); font-size: 11px; font-weight: 500; font-feature-settings: "zero" 0; }
+.gc-pred-val.pred-over { color: #4ade80; }
+.gc-pred-val.pred-under { color: #93c5fd; }
+.gc-pred-val.sp-agree { color: #4ade80; }
+.gc-pred-val.sp-disagree { color: #ef4444; }
+.gc-pred-grid {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 2px 12px;
+  margin-top: 4px;
+  justify-content: start;
+  margin-left: -10px;
+}
+.gc-pred-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gc-pred-cell .gc-pred-lbl {
+  width: 52px;
+  text-align: right;
+}
+.gc-pred-cell .gc-pred-val {
+  width: 32px;
+  text-align: left;
+}
+.gc-models-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.gc-cell {
+  padding: 6px 8px;
+  min-width: 0;
+}
+.gc-cell:first-child { border-right: 1px solid var(--border); }
+.gc-cell:last-child { border-right: none; }
+.gc-cell-label {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+.gc-cell-value {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+.gc-cell-value.dim { color: var(--muted); font-size: 11px; }
+
+/* AG score color bar */
+.ag-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.ag-bar-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  flex: 1;
+  overflow: hidden;
+}
+.ag-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f43f7a, #fb923c);
 }
 
-# ── MODEL 10: AdjForm-Momentum ─────────────────────────────────────────────────
-adjform_team <- cache$spread_new$adjform_team
+/* Edge score coloring — same logic as NBA */
+.es-high  { color: hsl(260, 85%, 72%); font-weight: 700; }
+.es-med   { color: hsl(240, 85%, 70%); font-weight: 600; }
+.es-low   { color: var(--muted); font-weight: 500; }
 
-get1 <- function(df, nm) {
-  if (nrow(df) == 0 || !nm %in% names(df)) return(NA_real_)
-  as.numeric(df[[nm]][1])
+
+
+/* ── DAY NAV ── */
+.day-nav-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px 8px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.day-btn {
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.day-btn:hover { border-color: var(--accent); color: var(--text); }
+.day-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.day-btn.tomorrow.active { background: #3b82f6; border-color: #3b82f6; }
+
+/* ── LINE MOVEMENT ── */
+.lm-wrap {
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid var(--border);
+}
+.lm-label {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  white-space: nowrap;
+}
+.lm-val {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-align: left;
+  line-height: 1.4;
+  word-break: normal;
+  white-space: nowrap;
+}
+.lm-val.lm-good  { color: #4ade80; }
+.lm-val.lm-bad   { color: #ef4444; }
+.lm-val.lm-none  { color: var(--muted2); }
+
+/* ── YESTERDAY RESULT ── */
+.yest-sp { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
+.yest-sp-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.35;
+}
+.yest-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0 2px;
+}
+.yest-checkmark {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.yest-details {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.yest-actual { font-size: 12px; font-weight: 700; color: var(--text); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  header { padding: 14px 14px 12px; }
+  .header-logo { width: 88px; height: 88px; }
+  .site-title { font-size: 18px; }
+  main { padding: 10px; }
+  .records { grid-template-columns: repeat(3, 1fr); }
+  .rec { padding: 10px 8px; }
+  .rec-val { font-size: 15px; }
+  .tab { padding: 9px 8px; font-size: 11px; }
+  .gc-body { grid-template-columns: 82px 1fr; }
+  .gc-cell { padding: 7px 7px; }
+  .gc-cell-value { font-size: 11px; }
+  .gc-mkt-val { font-size: 12px; }
 }
 
-team_state_asof_adj <- function(team_id_in, season_in, target_date, venue_in = NULL) {
-  x <- adjform_team %>%
-    filter(as.character(team_id) == team_id_in,
-           as.integer(season)    == season_in,
-           as.Date(date)         < as.Date(target_date))
-  if (!is.null(venue_in)) x <- x %>% filter(venue == venue_in)
-  x %>% arrange(date, game_key) %>% slice_tail(n = 1)
+@media (max-width: 420px) {
+  .gc-body { grid-template-columns: 76px 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="header-copy">
+      <div class="brand">CTB Analytics</div>
+      <div class="site-title">College Basketball Sheet</div>
+      <div class="site-date" id="run-date">—</div>
+      <div id="updated"></div>
+    </div>
+    <div class="header-logo">
+      <img src="assets/ctb-logo.png" alt="CTB Analytics Logo">
+    </div>
+  </div>
+</header>
+
+<!-- Day navigation -->
+<div class="day-nav-wrap">
+  <button class="day-btn" id="btn-yesterday" onclick="switchDay('yesterday')">Yesterday</button>
+  <button class="day-btn active" id="btn-today" onclick="switchDay('today')">Today</button>
+  <button class="day-btn tomorrow" id="btn-tomorrow" onclick="switchDay('tomorrow')">Tomorrow</button>
+</div>
+
+<!-- Record trackers: Game Totals | Team Totals | Spreads -->
+<div class="records-wrap">
+  <div class="records-header">
+    <div class="records-header-line"></div>
+    <div class="records-header-label">Records</div>
+    <div class="records-header-line"></div>
+  </div>
+  <div class="records">
+    <div class="rec">
+      <div class="rec-label">Game Totals</div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-1">Top 1</span>
+        <span class="rec-row-val tier-1" id="r-gt-top1">—</span>
+        <span class="rec-row-pct tier-1" id="r-gt-top1-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-5">Top 5</span>
+        <span class="rec-row-val tier-5" id="r-gt-top5">—</span>
+        <span class="rec-row-pct tier-5" id="r-gt-top5-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-all">All</span>
+        <span class="rec-row-val" id="r-gt-all">—</span>
+        <span class="rec-row-pct" id="r-gt-all-pct">—</span>
+      </div>
+    </div>
+    <div class="rec">
+      <div class="rec-label">Team Totals</div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-1">Top 1</span>
+        <span class="rec-row-val tier-1" id="r-tt-top1">—</span>
+        <span class="rec-row-pct tier-1" id="r-tt-top1-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-5">Top 5</span>
+        <span class="rec-row-val tier-5" id="r-tt-top5">—</span>
+        <span class="rec-row-pct tier-5" id="r-tt-top5-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-all">All</span>
+        <span class="rec-row-val" id="r-tt-all">—</span>
+        <span class="rec-row-pct" id="r-tt-all-pct">—</span>
+      </div>
+    </div>
+    <div class="rec">
+      <div class="rec-label">Spreads</div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-1">Top 1</span>
+        <span class="rec-row-val tier-1" id="r-sp-top1">—</span>
+        <span class="rec-row-pct tier-1" id="r-sp-top1-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-5">Top 5</span>
+        <span class="rec-row-val tier-5" id="r-sp-top5">—</span>
+        <span class="rec-row-pct tier-5" id="r-sp-top5-pct">—</span>
+      </div>
+      <div class="rec-row">
+        <span class="rec-row-label tier-all">All</span>
+        <span class="rec-row-val" id="r-sp-all">—</span>
+        <span class="rec-row-pct" id="r-sp-all-pct">—</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="gt">Game Totals <span class="tab-ct" id="ct-gt">0</span></div>
+    <div class="tab" data-tab="tt">Team Totals <span class="tab-ct" id="ct-tt">0</span></div>
+    <div class="tab" data-tab="sp">Spreads <span class="tab-ct" id="ct-sp">0</span></div>
+  </div>
+</div>
+
+<main>
+  <div class="panel active" id="panel-gt"></div>
+  <div class="panel" id="panel-tt"></div>
+  <div class="panel" id="panel-sp"></div>
+</main>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────────────────
+const GITHUB_USER = 'CameronBroussard6';
+const GITHUB_REPO = 'cbb-site';
+const BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main`;
+
+// Tabs and their CSV file prefixes / display labels
+const TABS = {
+  gt: { label: 'Game Totals',  todayFile: 'game_totals_today',  tmrFile: 'game_totals_tomorrow',  histFile: 'game_totals_history',  resultCol: 'bet_result'  },
+  tt: { label: 'Team Totals',  todayFile: 'team_totals_today',  tmrFile: 'team_totals_tomorrow',  histFile: 'team_totals_history',  resultCol: 'bet_result'  },
+  sp: { label: 'Spreads',      todayFile: 'spreads_today',      tmrFile: 'spreads_tomorrow',      histFile: 'spreads_history',      resultCol: 'pick_result' },
+};
+
+// Current day view: 'yesterday' | 'today' | 'tomorrow'
+let currentDay = 'today';
+// Cached history rows for yesterday grading
+let historyCache = {};
+// Cached odds history for line movement
+let oddsHistCache = null;
+let oddsHistByDate = {};
+
+const MODEL_COLS = {
+  gt: ['ridge_pred_total', 'recency_pred_total', 'from_team_pred_total', 'ensemble_pred_total', 'elo_sim_pred_total', 'xgb_elo_pred_total'],
+  tt: ['pred_team_total', 'recency_team_pred', 'elo_sim_team_pred'],
+  sp: ['model_spread_str'],
+};
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+// Always use Central time — pipeline runs on Central schedule
+function todayCentral() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(new Date());
+}
+// Try today, yesterday, tomorrow in Central time so data is found regardless of load time
+function candidateDates() {
+  const ms = now => now.getTime();
+  const now = new Date();
+  const fmtC = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(d);
+  const t = ms(now);
+  return [fmtC(new Date(t)), fmtC(new Date(t - 86400000)), fmtC(new Date(t + 86400000))];
 }
 
-pred_adjform <- function(hid, aid, game_date) {
-  s <- if (month(as.Date(game_date)) >= 7) year(as.Date(game_date)) else year(as.Date(game_date)) - 1L
-  home_elo <- team_pre_elo_asof(hid, s, game_date)
-  away_elo <- team_pre_elo_asof(aid, s, game_date)
-  hs  <- team_state_asof_adj(hid, s, game_date, NULL)
-  as_ <- team_state_asof_adj(aid, s, game_date, NULL)
-  # Neutral site: skip venue residuals
-  if (!is.finite(home_elo) || !is.finite(away_elo) || nrow(hs) == 0 || nrow(as_) == 0) return(NA_real_)
-  exp_margin <- (home_elo - away_elo) / 28  # neutral site: no HCA (+75)
-  exp_margin +
-    0.30 * coalesce(get1(hs,"resid2")   - get1(as_,"resid2"),   0) +
-    0.35 * coalesce(get1(hs,"resid4")   - get1(as_,"resid4"),   0) +
-    0.15 * coalesce(get1(hs,"resid10")  - get1(as_,"resid10"),  0) +
-    0.00 * 0 +  # venue_resid4_diff zeroed — neutral site (github weight: 0.20)
-    0.10 * coalesce(get1(hs,"resid_w5") - get1(as_,"resid_w5"), 0) -
-    0.05 * coalesce(get1(hs,"resid_sd10") - get1(as_,"resid_sd10"), 0)  # github includes this
+function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
 }
 
-# ── FUZZY NAME MATCH ──────────────────────────────────────────────────────────
-# Tournament CSV names may differ slightly from ESPN names
-# Strategy: exact clean match -> partial match -> best string distance
-resolve_team_id <- function(tourn_name) {
-  clean <- str_to_lower(str_trim(tourn_name))
-  
-  # 1. Exact match
-  m <- team_lookup %>% filter(name_clean == clean)
-  if (nrow(m) >= 1) return(m$team_id[1])
-  
-  # 2. Contains match (tourn name in ESPN name or vice versa)
-  m <- team_lookup %>% filter(str_detect(name_clean, fixed(clean)) | str_detect(clean, fixed(name_clean)))
-  if (nrow(m) == 1) return(m$team_id[1])
-  if (nrow(m) > 1) {
-    # pick shortest (most specific)
-    m <- m %>% arrange(nchar(team_name))
-    return(m$team_id[1])
+function fmtDateOrdinal(str) {
+  if (!str) return '—';
+  const d = new Date(str + 'T12:00:00');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${days[d.getDay()]}, ${months[d.getMonth()]} ${ordinal(d.getDate())} ${d.getFullYear()}`;
+}
+
+function fmtLastRun(isoStr) {
+  if (!isoStr) return 'Last Run: —';
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return 'Last Run: —';
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    month: 'long', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true
+  }).formatToParts(d);
+  const get = t => parts.find(p => p.type === t)?.value || '';
+  const day = Number(get('day'));
+  return `Last Run: ${get('month')} ${ordinal(day)} ${get('year')} ${get('hour')}:${get('minute')} ${(get('dayPeriod')||'').toLowerCase()} Central`;
+}
+
+async function fetchCSV(url) {
+  try {
+    const r = await fetch(url + '?t=' + Date.now());
+    if (!r.ok) { console.warn(`CSV 404: ${url}`); return null; }
+    return parseCSV(await r.text());
+  } catch(e) { console.warn(`CSV error: ${url}`, e); return null; }
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map(line => {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; continue; }
+      if (line[i] === ',' && !inQ) { vals.push(cur); cur = ''; continue; }
+      cur += line[i];
+    }
+    vals.push(cur);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i]||'').trim());
+    return obj;
+  });
+}
+
+function fmt(v, d=1) {
+  const n = parseFloat(v);
+  if (isNaN(n)) return '—';
+  const s = n.toFixed(d);
+  // strip trailing .0 but keep .5
+  return s.endsWith('.0') ? String(Math.round(n)) : s;
+}
+
+function fmtRec(w, l) { return (w+l===0) ? '—' : `${w}/${w+l}`; }
+function pct(w, l)     { return (w+l===0) ? '—' : `${Math.round(w/(w+l)*100)}%`; }
+
+// ── AG SCORE ───────────────────────────────────────────────────────────────
+// Computed from model prediction columns vs the market line and bet direction
+// For game totals: count how many model preds agree with bet direction (OVER/UNDER)
+// For spreads: how many models agree with the spread pick
+function computeAGScore(row, tabKey) {
+  const bet = (row.bet || row.pick || '').toUpperCase();
+  if (!bet || bet === '' || bet === 'PASS') return null;
+
+  const cols = MODEL_COLS[tabKey] || [];
+  if (cols.length === 0) return null;
+
+  let market, agrees = 0, total = 0;
+
+  if (tabKey === 'gt' || tabKey === 'tt') {
+    market = parseFloat(row.market_total || row.market_team_total || 0);
+    if (isNaN(market)) return null;
+    cols.forEach(col => {
+      const pred = parseFloat(row[col]);
+      if (isNaN(pred)) return;
+      total++;
+      const predSide = pred > market ? 'OVER' : 'UNDER';
+      if (predSide === bet) agrees++;
+    });
+  } else if (tabKey === 'sp') {
+    // Pick direction: positive edge_blend = home favored by model
+    const blendMargin = parseFloat(row.pred_margin_blend || 0);
+    const pickIsHome = blendMargin > 0;
+    const margins = [row.pred_margin_04, row.pred_margin_09, row.pred_margin_10];
+    margins.forEach(m => {
+      const v = parseFloat(m);
+      if (isNaN(v)) return;
+      total++;
+      const modelPicksHome = v > 0;
+      if (modelPicksHome === pickIsHome) agrees++;
+    });
   }
-  
-  # 3. First word match (school name usually first)
-  first_word <- str_split(clean, " ")[[1]][1]
-  m <- team_lookup %>% filter(str_starts(name_clean, first_word))
-  if (nrow(m) == 1) return(m$team_id[1])
-  
-  # 4. Best partial overlap on cleaned tokens
-  tourn_tokens <- str_split(clean, " ")[[1]]
-  scores <- sapply(team_lookup$name_clean, function(n) {
-    n_tokens <- str_split(n, " ")[[1]]
-    length(intersect(tourn_tokens, n_tokens)) / max(length(tourn_tokens), 1)
-  })
-  best_idx <- which.max(scores)
-  if (scores[best_idx] >= 0.5) return(team_lookup$team_id[best_idx])
-  
-  NA_character_
+
+  return total === 0 ? null : agrees / total;
 }
 
-# ── BUILD TEAM ID CACHE ───────────────────────────────────────────────────────
-cat("Resolving team names to IDs...\n")
-all_team_names <- unique(c(
-  bracket_raw$team1[bracket_raw$status == "completed" | !str_detect(bracket_raw$team1, "Winner")],
-  bracket_raw$team2[bracket_raw$status == "completed" | !str_detect(bracket_raw$team2, "Winner")]
-))
-all_team_names <- all_team_names[!is.na(all_team_names) & all_team_names != ""]
-
-ESPN_NAME_FIXES <- c(
-  "Massachusetts-Lowell" = "UMass Lowell",
-  "USC-Upstate"          = "USC Upstate",
-  "UNC-Asheville"        = "UNC Asheville",
-  "UNC-Greensboro"       = "UNC Greensboro",
-  "UTRGV"                = "UT Rio Grande Valley",
-  "Texas-Arlington"      = "UT Arlington",
-  "Loyola-Chicago"       = "Loyola Chicago",
-  "Loyola-Maryland"      = "Loyola Maryland",
-  "Louisiana-Monroe"     = "UL Monroe Warhawks"
-)
-
-resolve_with_fix <- function(name) {
-  espn_name <- if (name %in% names(ESPN_NAME_FIXES)) ESPN_NAME_FIXES[[name]] else name
-  resolve_team_id(espn_name)
+function agScoreStyle(score) {
+  if (score === null || isNaN(score)) return 'color:#707784;font-weight:500;';
+  const hue = score * 120; // 0=red, 120=green
+  return `color:hsl(${hue},55%,62%);font-weight:700;`;
 }
 
-id_cache <- setNames(
-  sapply(all_team_names, resolve_with_fix, USE.NAMES = FALSE),
-  all_team_names
-)
-resolved   <- sum(!is.na(id_cache))
-unresolved <- names(id_cache)[is.na(id_cache)]
-cat("  Resolved:", resolved, "of", length(all_team_names), "\n")
-if (length(unresolved) > 0) {
-  cat("  UNRESOLVED (will use ELO-only fallback):\n")
-  for (u in unresolved) cat("    -", u, "\n")
+function agScoreDisplay(score) {
+  if (score === null || isNaN(score)) return '—';
+  return `${Math.round(score * 100)}%`;
 }
-cat("\n")
 
-# ── SPREAD PREDICTION FOR ONE GAME ───────────────────────────────────────────
-# Returns predicted margin (positive = home team wins by that many)
-# and win probability for home team
-predict_game <- function(home_name, away_name, game_date = TARGET_DATE) {
-  hid <- id_cache[home_name]
-  aid <- id_cache[away_name]
-  
-  eh <- if (!is.na(hid)) getr(hid) else ELO_INIT
-  ea <- if (!is.na(aid)) getr(aid) else ELO_INIT
-  
-  # ELO-only win prob — neutral site, no HCA
-  elo_win_prob_home <- exp_home_neutral(eh, ea)
-  # ELO implied margin — neutral site (no HCA added)
-  elo_margin <- (eh - ea) * 0.04
-  
-  # Try full XGB model if both teams resolved
-  xgb_margin <- NA_real_
-  if (!is.na(hid) && !is.na(aid)) {
-    hs  <- team_state_asof(hid)
-    as_ <- team_state_asof(aid)
-    
-    if (nrow(hs) > 0 && nrow(as_) > 0) {
-      df <- tibble(
-        game_id       = "tourn",
-        date          = as.Date(game_date),
-        season        = SEASON,
-        team_id_home  = hid,
-        team_id_away  = aid,
-        pre_elo_home  = eh,
-        pre_elo_away  = ea,
-        elo_diff      = eh - ea,  # pure ELO diff, no HCA
-        # Neutral site: give both teams equal rest (1 day) and zero venue residuals
-        rest_home     = 1,
-        rest_away     = 1,
-        gp_before_home = as.numeric(hs$gp_before[1]),
-        gp_before_away = as.numeric(as_$gp_before[1]),
-        poss_roll_home = as.numeric(hs$poss_l10[1]),
-        poss_roll_away = as.numeric(as_$poss_l10[1]),
-        ppp_roll_home  = as.numeric(hs$ppp_l10[1]),
-        ppp_roll_away  = as.numeric(as_$ppp_l10[1]),
-        poss_sd_home   = as.numeric(hs$poss_sd10[1]),
-        poss_sd_away   = as.numeric(as_$poss_sd10[1]),
-        ppp_sd_home    = as.numeric(hs$ppp_sd10[1]),
-        ppp_sd_away    = as.numeric(as_$ppp_sd10[1]),
-        # Venue residuals zeroed — neutral site
-        home_venue_resid5  = 0,
-        home_venue_w10     = 0
-      ) %>%
-        mutate(
-          rest_diff      = 0,  # equal rest on neutral site
-          gp_before_diff = gp_before_home - gp_before_away,
-          poss_roll_diff = poss_roll_home - poss_roll_away,
-          ppp_roll_diff  = ppp_roll_home  - ppp_roll_away,
-          poss_sd_diff   = poss_sd_home   - poss_sd_away,
-          ppp_sd_diff    = ppp_sd_home    - ppp_sd_away,
-          margin_home    = NA_real_
-        )
-      
-      for (nm in bundle$feature_cols) if (!nm %in% names(df)) df[[nm]] <- NA_real_
-      X <- df[, bundle$feature_cols, drop = FALSE]
-      for (nm in bundle$feature_cols) {
-        X[[nm]] <- suppressWarnings(as.numeric(X[[nm]]))
-        X[[nm]][!is.finite(X[[nm]])] <- NA_real_
-        if (nm %in% names(bundle$train_medians)) {
-          X[[nm]][is.na(X[[nm]])] <- bundle$train_medians[[nm]]
-        } else {
-          X[[nm]][is.na(X[[nm]])] <- 0
-        }
-      }
-      xgb_margin <- tryCatch(
-        as.numeric(predict(bundle$xgb$fit, xgb.DMatrix(as.matrix(X)))),
-        error = function(e) NA_real_
-      )
+function agBarFill(score) {
+  if (score === null || isNaN(score)) return 0;
+  return Math.round(score * 100);
+}
+
+// ── EDGE SCORE STYLE ───────────────────────────────────────────────────────
+function edgeScoreClass(score) {
+  const n = parseFloat(score);
+  if (isNaN(n)) return '';
+  if (n >= 8) return 'es-high';
+  if (n >= 4) return 'es-med';
+  return 'es-low';
+}
+
+// ── BET BADGE ──────────────────────────────────────────────────────────────
+function betBadge(row, tabKey) {
+  const raw = (row.bet || row.pick || '').toUpperCase();
+
+  if (tabKey === 'gt' || tabKey === 'tt') {
+    const line = fmt(row.market_total || row.market_team_total, 1);
+    if (raw === 'OVER') return `<span class="badge b-spread"><span class="badge-arrow">↑</span><span class="badge-copy"><span class="badge-main"><strong>Over</strong> ${line}</span></span></span>`;
+    if (raw === 'UNDER') return `<span class="badge b-spread"><span class="badge-arrow">↓</span><span class="badge-copy"><span class="badge-main"><strong>Under</strong> ${line}</span></span></span>`;
+  }
+
+  if (tabKey === 'sp') {
+    const pick = row.pick || row.bet || '';
+    // Extract spread number from end e.g. "Mercyhurst Lakers -4.5" -> -4.5
+    const spreadMatch = pick.match(/([+-]?\d+\.?\d*)$/);
+    const spreadNum = spreadMatch ? parseFloat(spreadMatch[1]) : NaN;
+    // minus = green (favorite = b-over), plus = blue (underdog = b-under)
+    const isMinus = !isNaN(spreadNum) && spreadNum < 0;
+    const cls = isMinus ? 'b-over' : 'b-under';
+    const teamWords = pick.replace(/[+-]?\d+\.?\d*$/, '').trim().split(' ');
+    const shortTeam = teamWords.slice(0, 2).join(' ').trim();
+    // Format line cleanly — no double sign
+    const absNum = isNaN(spreadNum) ? '' : Math.abs(spreadNum) % 1 === 0 ? Math.abs(spreadNum).toFixed(0) : Math.abs(spreadNum).toFixed(1);
+    const lineStr = isNaN(spreadNum) ? pick : (isMinus ? '-' : '+') + absNum;
+    return `<span class="badge b-spread"><span class="badge-copy"><span class="badge-main">${shortTeam} ${lineStr}</span></span></span>`;
+  }
+
+  return `<span class="badge b-pass">PASS</span>`;
+}
+
+// ── RECORD COMPUTATION ─────────────────────────────────────────────────────
+function computeRecord(rows, resultCol, topN = null) {
+  if (!rows || !rows.length) return { w: 0, l: 0, p: 0 };
+  let eligible = rows;
+  if (topN) {
+    // Group by date, take top-N brain_score per day, then flatten
+    const byDate = {};
+    rows.forEach(r => {
+      const d = r.date || 'unknown';
+      if (!byDate[d]) byDate[d] = [];
+      byDate[d].push(r);
+    });
+    eligible = [];
+    Object.values(byDate).forEach(dayRows => {
+      const sorted = dayRows.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
+      eligible.push(...sorted.slice(0, topN));
+    });
+  }
+  let w=0, l=0, p=0;
+  eligible.forEach(r => {
+    const res = (r[resultCol]||'').toUpperCase();
+    if (res==='W') w++;
+    else if (res==='L') l++;
+    else if (res==='P') p++;
+  });
+  return { w, l, p };
+}
+
+async function loadRecords() {
+  const configs = [
+    { id: 'gt', histFile: 'game_totals_history', resultCol: 'bet_result' },
+    { id: 'tt', histFile: 'team_totals_history',  resultCol: 'bet_result' },
+    { id: 'sp', histFile: 'spreads_history',       resultCol: 'pick_result' },
+  ];
+
+  for (const cfg of configs) {
+    const rows = await fetchCSV(`${BASE}/data/${cfg.histFile}.csv`);
+    if (!rows || !rows.length) continue;
+
+    const all  = computeRecord(rows, cfg.resultCol);
+    const top5 = computeRecord(rows, cfg.resultCol, 5);
+    const top1 = computeRecord(rows, cfg.resultCol, 1);
+    const id   = cfg.id;
+
+    document.getElementById(`r-${id}-all`).textContent      = fmtRec(all.w, all.l);
+    document.getElementById(`r-${id}-all-pct`).textContent  = pct(all.w, all.l);
+    document.getElementById(`r-${id}-top5`).textContent     = fmtRec(top5.w, top5.l);
+    document.getElementById(`r-${id}-top5-pct`).textContent = pct(top5.w, top5.l);
+    document.getElementById(`r-${id}-top1`).textContent     = fmtRec(top1.w, top1.l);
+    document.getElementById(`r-${id}-top1-pct`).textContent = pct(top1.w, top1.l);
+  }
+}
+
+// ── CARD BUILDER ───────────────────────────────────────────────────────────
+function buildCards(rows, tabKey, day='today') {
+  if (!rows || !rows.length) {
+    const label = TABS[tabKey]?.label || tabKey;
+    return `<div class="empty"><div class="icon">🏀</div><p>No ${label} picks.</p></div>`;
+  }
+
+  const isTBD = t => !t || t.trim() === '' || t.trim().toUpperCase() === 'TBD' || t.trim().toUpperCase() === 'NA';
+  const valid = rows.filter(r => {
+    if (tabKey === 'tt') return !isTBD(r.team_name);
+    return !isTBD(r.away_team) && !isTBD(r.home_team);
+  });
+  const sorted = valid.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
+
+  return `<div class="game-cards">${sorted.map((r, i) => buildCard(r, i, tabKey, day)).join('')}</div>`;
+}
+
+function buildCard(r, rank, tabKey, day='today') {
+  const ag = computeAGScore(r, tabKey);
+  const agPct = agBarFill(ag);
+  const edgeClass = edgeScoreClass(r.brain_score);
+  const badge = betBadge(r, tabKey);
+
+  // Matchup line
+  const away = r.away_team || '?';
+  const home = r.home_team || r.team_name || '?';
+
+  // For spreads: derive per-team lines directly from pick column
+  let spAwayLine = '', spHomeLine = '';
+  if (tabKey === 'sp') {
+    const pickLineRaw = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
+    if (pickLineRaw) {
+      const pickNum = parseFloat(pickLineRaw[1]);
+      const absP = Math.abs(pickNum);
+      const absStr = absP % 1 === 0 ? absP.toFixed(0) : absP.toFixed(1);
+      const pickLineStr = (pickNum < 0 ? '-' : '+') + absStr;
+      const otherLineStr = (pickNum < 0 ? '+' : '-') + absStr;
+      // which team is the pick?
+      const pickStr = (r.pick||'').replace(/[+-]?\d+\.?\d*$/, '').trim().toLowerCase();
+      const pickIsHomeH = pickStr.includes(home.split(' ')[0].toLowerCase());
+      spHomeLine = pickIsHomeH ? pickLineStr : otherLineStr;
+      spAwayLine = pickIsHomeH ? otherLineStr : pickLineStr;
     }
   }
-  
-  # Model 09: SimELO-Recency (25%)
-  simelo_margin <- if (!is.na(hid) && !is.na(aid)) pred_simelo(hid, aid, game_date) else NA_real_
+  const haStr = r.homeAway==='home' ? 'Home' : 'Away';
+  const matchup = tabKey === 'tt'
+    ? `<span class="away">${home} <span style="font-size:9px;font-weight:400;color:var(--muted);">(${haStr})</span></span>`
+    : tabKey === 'sp'
+    ? `<span class="away">${away} <span style="font-size:9px;color:var(--warn);">${spAwayLine}</span></span><span class="vs">@</span><span class="home-team">${home} <span style="font-size:9px;color:var(--warn);">${spHomeLine}</span></span>`
+    : `<span class="away">${away}</span><span class="vs">@</span><span class="home-team">${home}</span>`;
 
-  # Model 10: AdjForm-Momentum (50%)
-  adjform_margin <- if (!is.na(hid) && !is.na(aid)) pred_adjform(hid, aid, game_date) else NA_real_
+  // Market + model lines
+  let marketLine = '—', edgePts = '—';
+  let modelPredRows = ''; // individual model prediction rows
 
-  # Blend: 25% XGB + 25% SimELO + 50% AdjForm (matching Brain weights)
-  # Fall back gracefully if any model is unavailable
-  w04 <- if (!is.na(xgb_margin))    0.25 else 0
-  w09 <- if (!is.na(simelo_margin)) 0.25 else 0
-  w10 <- if (!is.na(adjform_margin))0.50 else 0
-  w_sum <- w04 + w09 + w10
-
-  if (w_sum > 0) {
-    pred_margin <- (coalesce(xgb_margin,    0) * w04 +
-                    coalesce(simelo_margin, 0) * w09 +
-                    coalesce(adjform_margin,0) * w10) / w_sum
-  } else {
-    pred_margin <- elo_margin
-  }
-  
-  # Convert margin to win probability using logistic approximation
-  # ~1 pt spread ~ 3% win prob shift; SD of college spreads ~11 pts
-  win_prob_home <- pnorm(pred_margin, mean = 0, sd = 11)
-  
-  list(
-    pred_margin    = pred_margin,
-    win_prob_home  = win_prob_home,
-    elo_home       = eh,
-    elo_away       = ea,
-    used_xgb       = !is.na(xgb_margin),
-    used_simelo    = !is.na(simelo_margin),
-    used_adjform   = !is.na(adjform_margin)
-  )
-}
-
-# ── PROCESS ONE CONFERENCE ────────────────────────────────────────────────────
-project_conference <- function(conf_code, conf_games_all) {
-  cat("  Processing", conf_code, "...\n")
-  
-  # Separate completed vs scheduled
-  completed  <- conf_games_all %>% filter(status == "completed")
-  scheduled  <- conf_games_all %>% filter(status != "completed")
-  
-  # Get all unique real team names (not "Winner of X")
-  all_teams <- unique(c(
-    completed$team1, completed$team2,
-    scheduled$team1[!str_detect(scheduled$team1, "Winner|TBD|^$")],
-    scheduled$team2[!str_detect(scheduled$team2, "Winner|TBD|^$")]
-  ))
-  all_teams <- all_teams[!is.na(all_teams) & all_teams != ""]
-  
-  # Predict spread for every schedulable game with known teams
-  game_preds <- list()
-  for (i in seq_len(nrow(scheduled))) {
-    g <- scheduled[i, ]
-    t1 <- g$team1; t2 <- g$team2
-    if (is.na(t1) || is.na(t2) || str_detect(t1, "Winner|TBD") || str_detect(t2, "Winner|TBD")) next
-    
-    # In tournament CSV: team1 is typically the higher seed (away-ish), team2 is lower seed (home-ish)
-    # We'll treat team2 as home for neutral-site adjustment (small)
-    res <- predict_game(home_name = t2, away_name = t1, game_date = as.Date(g$game_date_iso))
-    
-    game_preds[[g$game_id]] <- tibble(
-      tournament_code = conf_code,
-      game_id         = g$game_id,
-      round_number    = as.integer(g$round_number),
-      round_label     = g$round_label,
-      game_date       = as.Date(g$game_date_iso),
-      team1           = t1,  # away
-      team2           = t2,  # home
-      team1_seed      = g$team1_seed,
-      team2_seed      = g$team2_seed,
-      pred_margin_home = res$pred_margin,
-      win_prob_team2  = res$win_prob_home,
-      win_prob_team1  = 1 - res$win_prob_home,
-      elo_team1       = res$elo_away,
-      elo_team2       = res$elo_home,
-      used_xgb        = res$used_xgb
-    )
-  }
-  
-  if (length(game_preds) == 0) {
-    cat("    No schedulable games with known teams.\n")
-    return(list(game_preds = NULL, winner_probs = NULL))
-  }
-  
-  game_preds_df <- bind_rows(game_preds)
-  
-  # ── MONTE CARLO SIMULATION ────────────────────────────────────────────────
-  # Simulate full bracket N_SIM times
-  # Known results from completed games are fixed
-  
-  # Build winner lookup from completed games
-  completed_winners <- setNames(
-    completed$winner,
-    as.character(completed$game_id)
-  )
-  
-  # Count tournament wins per team across all sims
-  win_counts <- setNames(rep(0L, length(all_teams)), all_teams)
-  
-  # Pre-compute all pairwise win probs so Monte Carlo never calls predict_game() live
-  cat("    Pre-computing pairwise matchups...\n")
-  pairwise_wp <- list()
-  for (t1x in all_teams) {
-    for (t2x in all_teams) {
-      if (t1x == t2x) next
-      pair_key <- paste(t1x, t2x, sep = "||")
-      rev_key  <- paste(t2x, t1x, sep = "||")
-      if (!is.null(pairwise_wp[[pair_key]]) || !is.null(pairwise_wp[[rev_key]])) next
-      res_pw <- predict_game(home_name = t2x, away_name = t1x, game_date = TARGET_DATE)
-      pairwise_wp[[pair_key]] <- res_pw$win_prob_home
-    }
-  }
-  cat("    Pairwise cache:", length(pairwise_wp), "matchups\n")
-
-  for (sim in seq_len(N_SIM)) {
-    # Track winners for this simulation: game_id -> winning team name
-    sim_winners <- completed_winners
-    
-    # Sort all games by round so we process in order
-    all_games <- conf_games_all %>% arrange(round_number, game_id)
-    
-    for (j in seq_len(nrow(all_games))) {
-      g <- all_games[j, ]
-      gid <- as.character(g$game_id)
-      
-      # If already completed, winner is known
-      if (gid %in% names(sim_winners) && !is.na(sim_winners[[gid]])) next
-      
-      # Resolve team names (may be "Winner of GAME-XX")
-      resolve_sim_team <- function(team_str) {
-        if (is.na(team_str) || team_str == "") return(NA_character_)
-        if (!str_detect(team_str, "Winner")) return(team_str)
-        # Extract referenced game id
-        ref_gid <- str_extract(team_str, "[A-Z0-9]+-\\d+")
-        if (is.na(ref_gid)) return(NA_character_)
-        sim_winners[[ref_gid]]
-      }
-      
-      t1 <- resolve_sim_team(g$team1)
-      t2 <- resolve_sim_team(g$team2)
-      
-      if (is.na(t1) || is.na(t2)) next  # can't resolve yet, will be caught in later rounds
-      
-      # Get win prob from precomputed game_preds if available, else pairwise cache
-      pred_row <- game_preds_df %>% filter(game_id == gid)
-      if (nrow(pred_row) > 0) {
-        wp2 <- pred_row$win_prob_team2[1]
+  if (tabKey === 'gt') {
+    marketLine = fmt(r.market_total, 1);
+    const mkt = parseFloat(r.market_total);
+    const betIsOver = (r.bet||'').toUpperCase() === 'OVER';
+    const pc = v => {
+      const n = parseFloat(v);
+      if (isNaN(n)||isNaN(mkt)) return '';
+      const modelOver = n >= mkt;
+      return (modelOver === betIsOver) ? 'sp-agree' : 'sp-disagree';
+    };
+    const ridge    = fmt(r.ridge_pred_total, 1);
+    const recency  = fmt(r.recency_pred_total, 1);
+    const teamFoc  = fmt(r.from_team_pred_total, 1);
+    const ensemble = fmt(r.ensemble_pred_total, 1);
+    const eloSim   = fmt(r.elo_sim_pred_total, 1);
+    const xgbElo   = fmt(r.xgb_elo_pred_total, 1);
+    modelPredRows = `
+      <div class="gc-pred-grid">
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">RIDGE</span><span class="gc-pred-val ${pc(r.ridge_pred_total)}">${ridge}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">RECENCY</span><span class="gc-pred-val ${pc(r.recency_pred_total)}">${recency}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">TEAM</span><span class="gc-pred-val ${pc(r.from_team_pred_total)}">${teamFoc}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">ENSEMBLE</span><span class="gc-pred-val ${pc(r.ensemble_pred_total)}">${ensemble}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">SIM</span><span class="gc-pred-val ${pc(r.elo_sim_pred_total)}">${eloSim}</span></div>
+        <div class="gc-pred-cell"><span class="gc-pred-lbl">XGB</span><span class="gc-pred-val ${pc(r.xgb_elo_pred_total)}">${xgbElo}</span></div>
+      </div>`;
+    const diff = parseFloat(r.ensemble_pred_total) - mkt;
+    edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
+  } else if (tabKey === 'tt') {
+    marketLine = fmt(r.market_team_total, 1);
+    const mkt = parseFloat(r.market_team_total);
+    const betIsOverTT = (r.bet||'').toUpperCase() === 'OVER';
+    const pc = v => {
+      const n = parseFloat(v);
+      if (isNaN(n)||isNaN(mkt)) return '';
+      const modelOver = n >= mkt;
+      return (modelOver === betIsOverTT) ? 'sp-agree' : 'sp-disagree';
+    };
+    const predRidge   = fmt(r.pred_team_total, 1);
+    const predRecency = fmt(r.recency_team_pred, 1);
+    const predSim     = fmt(r.elo_sim_team_pred, 1);
+    modelPredRows = `
+      <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">RIDGE</span><span class="gc-market-val ${pc(r.pred_team_total)}">${predRidge}</span></div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">RECENCY</span><span class="gc-market-val ${pc(r.recency_team_pred)}">${predRecency}</span></div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;min-width:52px;text-align:right;">SIM</span><span class="gc-market-val ${pc(r.elo_sim_team_pred)}">${predSim}</span></div>
+      </div>`;
+    const diff = parseFloat(r.pred_team_total) - mkt;
+    edgePts = isNaN(diff) ? '—' : (diff >= 0 ? '+' : '') + diff.toFixed(1);
+  } else if (tabKey === 'sp') {
+    // Strip mascot from market spread string for display
+    // Always show the minus side for market line
+    // Market line: show from pick team's perspective using actual pick column
+    {
+      const pickTeam = (r.pick || '').replace(/[+-]?\d+\.?\d*$/, '').trim();
+      const pickLineM = (r.pick || '').match(/([+-]?\d+\.?\d*)$/);
+      const pickLineNum = pickLineM ? parseFloat(pickLineM[1]) : NaN;
+      if (pickTeam && !isNaN(pickLineNum)) {
+        const shortPick = pickTeam.split(' ').slice(0,2).join(' ');
+        const absL = Math.abs(pickLineNum);
+        const absStr = absL % 1 === 0 ? absL.toFixed(0) : absL.toFixed(1);
+        const lineStr = pickLineNum < 0 ? '-' + absStr : '+' + absStr;
+        marketLine = shortPick + ' ' + lineStr;
       } else {
-        pair_key  <- paste(t1, t2, sep = "||")
-        pair_key2 <- paste(t2, t1, sep = "||")
-        if (!is.null(pairwise_wp[[pair_key]])) {
-          wp2 <- pairwise_wp[[pair_key]]
-        } else if (!is.null(pairwise_wp[[pair_key2]])) {
-          wp2 <- 1 - pairwise_wp[[pair_key2]]
-        } else {
-          res_live <- predict_game(home_name = t2, away_name = t1, game_date = as.Date(g$game_date_iso))
-          wp2 <- res_live$win_prob_home
-          pairwise_wp[[pair_key]] <<- wp2
-        }
+        marketLine = r.market_spread_str || '—';
       }
-      
-      # Simulate outcome
-      winner <- if (runif(1) < wp2) t2 else t1
-      sim_winners[[gid]] <- winner
     }
-    
-    # The final game winner wins the tournament
-    final_game <- all_games %>% filter(round_number == max(round_number)) %>% slice(1)
-    final_gid  <- as.character(final_game$game_id)
-    final_winner <- sim_winners[[final_gid]]
-    if (!is.null(final_winner) && !is.na(final_winner) && final_winner %in% names(win_counts)) {
-      win_counts[[final_winner]] <- win_counts[[final_winner]] + 1L
+
+    // Build model spread lines from raw margins
+    const mktSpread = parseFloat(r.market_spread_home || r.edge_blend || 0);
+    // Identify pick team (home or away)
+    const pickTeamStr = (r.pick||'').replace(/[+-]?\d+\.?\d*$/, '').trim().toLowerCase();
+    const pickIsHomeTeam = pickTeamStr.includes((r.home_team||'').split(' ')[0].toLowerCase());
+    const pickTeamFull = pickIsHomeTeam ? (r.home_team||'') : (r.away_team||'');
+    const shortPickTeam = pickTeamFull.split(' ').slice(0,2).join(' ');
+
+    const fmtSpreadLine = (margin) => {
+      if (isNaN(parseFloat(margin))) return '<span class="gc-market-val">—</span>';
+      const m = parseFloat(margin);
+      // pred_margin = home team margin. Positive = home wins by m, negative = away wins by abs(m)
+      // Convert to pick team's implied line:
+      // if pick team is home: their margin = m, so line = -m (they're favored if m>0)
+      // if pick team is away: their margin = -m, so line = m (they're favored if m<0)
+      const pickMargin = pickIsHomeTeam ? m : -m;
+      // pickMargin > 0 means pick team wins = they are the favorite = minus line
+      const absVal = Math.abs(pickMargin) % 1 === 0 ? Math.abs(pickMargin).toFixed(0) : Math.abs(pickMargin).toFixed(1);
+      // Always show from model-projected winner's perspective
+      const otherTeamFull = pickIsHomeTeam ? (r.away_team||'') : (r.home_team||'');
+      const shortOtherTeam = otherTeamFull.split(' ').slice(0,2).join(' ');
+      let lineStr;
+      if (pickMargin >= 0) {
+        // model says pick team wins — show pick team minus
+        lineStr = shortPickTeam + ' -' + absVal;
+      } else {
+        // model says other team wins — show other team with minus line
+        lineStr = shortOtherTeam + ' -' + absVal;
+      }
+      // Agree if model also picks our team (same sign as pick line)
+      const pickLineMatch2 = (r.pick||'').match(/([+-]?\d+\.?\d*)$/);
+      const pickLineNum2 = pickLineMatch2 ? parseFloat(pickLineMatch2[1]) : NaN;
+      const pickIsMinus2 = !isNaN(pickLineNum2) && pickLineNum2 < 0;
+      const marketAbs = Math.abs(pickLineNum2); // e.g. 2.5 for -2.5 or +2.5
+      // Agree = model projects pick team covers the spread:
+      // if pick is minus (fav): pickMargin must exceed marketAbs (win by more than spread)
+      // if pick is plus (dog):  pickMargin must be > -marketAbs (lose by less than spread, or win)
+      const modelAgreesWithPick = pickIsMinus2
+        ? (pickMargin > marketAbs)
+        : (pickMargin > -marketAbs);
+      const cls = modelAgreesWithPick ? 'sp-agree' : 'sp-disagree';
+      return `<span class="gc-market-val ${cls}">${lineStr}</span>`;
+    };
+    modelPredRows = `
+      <div style="display:inline-flex;flex-direction:column;gap:2px;align-items:stretch;">
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:62px;text-align:right;">XGB</span>${fmtSpreadLine(r.pred_margin_04)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:62px;text-align:right;">ELO</span>${fmtSpreadLine(r.pred_margin_09)}</div>
+        <div style="display:flex;gap:6px;align-items:baseline;"><span style="font-family:var(--mono);font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;min-width:62px;text-align:right;">AdjForm</span>${fmtSpreadLine(r.pred_margin_10)}</div>
+      </div>`;
+    edgePts = r.edge_pts ? (parseFloat(r.edge_pts) >= 0 ? '+' : '') + fmt(r.edge_pts, 1) : '—';
+  }
+
+  const edgePtClass = edgePts.startsWith('+') ? 'ep' : edgePts.startsWith('-') ? 'en' : '';
+
+  // Compute consensus from model cols
+  let overCount = 0, underCount = 0;
+  if (tabKey === 'gt') {
+    const mkt = parseFloat(r.market_total);
+    MODEL_COLS.gt.forEach(col => {
+      const n = parseFloat(r[col]);
+      if (!isNaN(n) && !isNaN(mkt)) { n >= mkt ? overCount++ : underCount++; }
+    });
+  } else if (tabKey === 'tt') {
+    const mkt = parseFloat(r.market_team_total);
+    ['pred_team_total','recency_team_pred','elo_sim_team_pred'].forEach(col => {
+      const n = parseFloat(r[col]);
+      if (!isNaN(n) && !isNaN(mkt)) { n >= mkt ? overCount++ : underCount++; }
+    });
+  }
+  const totalVotes = overCount + underCount;
+  const overPct = totalVotes > 0 ? Math.round(overCount / totalVotes * 100) : 50;
+  const dominantSide = overCount >= underCount ? 'OVER' : 'UNDR';
+  const dominantPct = overCount >= underCount ? overPct : 100 - overPct;
+  const consensusColor = overCount >= underCount ? '#4ade80' : '#93c5fd';
+  const consensusHtml = tabKey === 'sp' ? '' : `
+    <div class="gc-consensus">
+      <div class="gc-consensus-label">Split</div>
+      <div class="gc-consensus-track">
+        <div class="gc-consensus-fill" style="height:${overPct}%;background:#166534;"></div>
+      </div>
+      <div class="gc-consensus-pct" style="color:${consensusColor}">${dominantPct}%</div>
+      <div class="gc-consensus-side" style="color:${consensusColor}">${dominantSide}</div>
+    </div>`;
+
+  // Line movement (today/tomorrow only)
+  const lmDate = day === 'tomorrow' ? candidateDates()[2] : candidateDates()[0];
+  const lmHist = (oddsHistByDate && oddsHistByDate[lmDate]) ? oddsHistByDate[lmDate] : oddsHistCache;
+  const lineMoveHtml = (day === 'today' || day === 'tomorrow')
+    ? buildLineMoveHtml(r.game_id, tabKey, lmHist, r)
+    : '';
+
+  // Yesterday result overlay
+  const yestHtml = day === 'yesterday'
+    ? buildYestResult(r, tabKey, historyCache[tabKey])
+    : '';
+
+  const bodyWidth = (tabKey === 'sp' && day === 'yesterday') ? '98px' : '82px';
+  return `
+<div class="game-card">
+  <div class="gc-head">
+    <div class="gc-matchup">
+      <div class="gc-rank" style="color:${rank===0 ? '#f5c542' : rank<5 ? '#f0a05a' : '#ffffff'};font-weight:${rank<5?'700':'500'}">#${rank+1}</div>
+      <div class="gc-teams">${matchup}</div>
+    </div>
+    <div>${badge}</div>
+  </div>
+  <div class="gc-body" style="grid-template-columns:${bodyWidth} 1fr;">
+    <div class="gc-cell">
+      <div class="gc-cell-label">Edge Score</div>
+      <div class="gc-cell-value es ${edgeClass}">${fmt(r.brain_score, 1)}</div>
+      <div style="margin-top:8px;">
+        <div class="gc-cell-label" style="margin-bottom:2px;">AG Score</div>
+        <div class="gc-cell-value es" style="${agScoreStyle(ag)}">${agScoreDisplay(ag)}</div>
+        <div class="ag-bar"><div class="ag-bar-track"><div class="ag-bar-fill" style="width:${agPct}%"></div></div></div>
+      ${lineMoveHtml}
+      ${yestHtml}
+      </div>
+    </div>
+    <div class="gc-cell" style="display:flex;align-items:center;justify-content:center;">
+      <div class="gc-models-wrap">
+        <div class="gc-market-row"><span class="gc-market-lbl">MARKET</span><span class="gc-market-val">${marketLine}</span></div>
+        ${modelPredRows}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+// ── LINE MOVEMENT DISPLAY ─────────────────────────────────────────────────
+async function loadOddsHistory(dateStr) {
+  if (oddsHistCache) return oddsHistCache;
+  const rows = await fetchCSV(`${BASE}/data/odds_history_${dateStr}.csv`);
+  oddsHistCache = rows || [];
+  return oddsHistCache;
+}
+
+// Abbreviate a team name to initials: "Georgia Southern Eagles" -> "G.S."
+function teamInitials(name) {
+  if (!name) return '?';
+  const words = name.replace(/\(.*?\)/g, '').trim().split(/\s+/)
+                    .filter(w => w.length > 0);
+  // Take first two words only, no skipping
+  const init = words.slice(0, 2).map(w => w[0].toUpperCase() + '.').join('');
+  return init || '?';
+}
+
+function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
+  if (!oddsHist || oddsHist.length === 0) return '';
+  const gameRows = oddsHist.filter(r => r.game_id === gameId);
+  if (gameRows.length < 2) return '';
+
+  const sorted = gameRows.slice().sort((a,b) => a.run_time > b.run_time ? 1 : -1);
+  const first = sorted[0];
+  const last  = sorted[sorted.length - 1];
+
+  let moveLabel = '', dirCls = 'lm-none', bet = (row.bet || row.pick || '').toUpperCase();
+
+  if (tabKey === 'sp') {
+    const firstV = parseFloat(first.market_spread_home);
+    const lastV  = parseFloat(last.market_spread_home);
+    if (isNaN(firstV) || isNaN(lastV)) return '';
+    const move = lastV - firstV;
+
+    // Format spread value with team initials for clarity
+    const homeInit = teamInitials(row.home_team || '');
+    const fmtSpread = v => {
+      if (v === 0) return 'PK';
+      // positive = home favored by v, negative = away favored
+      const favInit = v < 0 ? homeInit : teamInitials(row.away_team || '');
+      return `${favInit} ${v > 0 ? '+' : ''}${v.toFixed(1)}`;
+    };
+
+    if (move === 0) {
+      moveLabel = `${fmtSpread(firstV)}<br>→ flat`;
+      dirCls = 'lm-none';
+    } else {
+      // Two-line: "G.S. +1.5" newline "▸ G.S. -1.5"
+      moveLabel = `${fmtSpread(firstV)}<br>→ ${fmtSpread(lastV)}`;
+      const pickHome = parseFloat(row.pred_margin_blend || 0) > 0;
+      const movedWithPick = (pickHome && move < 0) || (!pickHome && move > 0);
+      dirCls = movedWithPick ? 'lm-good' : 'lm-bad';
+    }
+  } else {
+    const firstV = parseFloat(first.market_total);
+    const lastV  = parseFloat(last.market_total);
+    if (isNaN(firstV) || isNaN(lastV)) return '';
+    const move = lastV - firstV;
+
+    if (move === 0) {
+      moveLabel = 'flat';
+      dirCls = 'lm-none';
+    } else {
+      const sign = move > 0 ? '+' : '';
+      moveLabel = `${sign}${move.toFixed(1)}`;
+      // Good = line moved with our bet
+      const movedWithBet = (bet === 'OVER' && move > 0) || (bet === 'UNDER' && move < 0);
+      dirCls = movedWithBet ? 'lm-good' : 'lm-bad';
     }
   }
-  
-  # Build winner probability table
-  winner_probs <- tibble(
-    tournament_code = conf_code,
-    team_name       = names(win_counts),
-    win_count       = as.integer(win_counts),
-    win_prob        = win_counts / N_SIM
-  ) %>%
-    arrange(desc(win_prob)) %>%
-    mutate(
-      rank = row_number(),
-      team_id = id_cache[team_name]
-    )
-  
-  projected_winner <- winner_probs$team_name[1]
-  top_prob         <- winner_probs$win_prob[1]
-  cat(sprintf("    Projected winner: %s (%.1f%%)\n", projected_winner, top_prob * 100))
-  
-  list(game_preds = game_preds_df, winner_probs = winner_probs)
+
+  return `<div class="lm-wrap">
+    <div class="lm-label">LINE MVMT</div>
+    <div class="lm-val ${dirCls}">${moveLabel}</div>
+  </div>`;
 }
 
-# ── RUN ALL CONFERENCES ───────────────────────────────────────────────────────
-cat("\n=== PROJECTING ALL CONFERENCES ===\n\n")
+// ── YESTERDAY RESULT DISPLAY ─────────────────────────────────────────────
+function buildYestResult(r, tabKey, histRows) {
+  if (!histRows || !histRows.length) return '';
+  const match = histRows.find(h => h.game_id === r.game_id);
+  if (!match) return '';
 
-by_conf <- bracket_raw %>%
-  group_by(tournament_code) %>%
-  group_split()
+  const resultCol = TABS[tabKey].resultCol;
+  const result = (match[resultCol] || '').toUpperCase();
+  if (!result || result === '') return '';
 
-all_game_preds  <- list()
-all_winner_probs <- list()
+  const actualTotal = parseFloat(match.actual_total);
+  const actualMargin = parseFloat(match.actual_margin || match.home_score) - parseFloat(match.away_score || 0);
 
-for (conf_df in by_conf) {
-  code <- conf_df$tournament_code[1]
-  result <- tryCatch(
-    project_conference(code, conf_df),
-    error = function(e) {
-      cat("    ERROR in", code, ":", conditionMessage(e), "\n")
-      list(game_preds = NULL, winner_probs = NULL)
+  let checkmark = '', resultWord = '', detailHtml = '';
+  if (result === 'W') {
+    checkmark = '<span class="yest-checkmark" style="color:#4ade80;">✓</span>';
+    resultWord = '<span style="color:#4ade80;font-weight:700;font-size:11px;">WIN</span>';
+  } else if (result === 'L') {
+    checkmark = '<span class="yest-checkmark" style="color:#ef4444;">✗</span>';
+    resultWord = '<span style="color:#ef4444;font-weight:700;font-size:11px;">LOSS</span>';
+  } else if (result === 'P') {
+    checkmark = '<span class="yest-checkmark" style="color:#f59e0b;">~</span>';
+    resultWord = '<span style="color:#f59e0b;font-weight:700;font-size:11px;">PUSH</span>';
+  }
+
+  if (tabKey === 'gt' && !isNaN(actualTotal)) {
+    const bet = (r.bet || '').toUpperCase();
+    detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${actualTotal}</span> · <span style="color:var(--muted)">Bet:</span> <span style="color:#fff">${bet} ${fmt(r.market_total,1)}</span></div>`;
+  } else if (tabKey === 'sp') {
+    const hs = parseFloat(match.home_score), as_ = parseFloat(match.away_score);
+    const pickStr = (r.pick || '').trim();
+    const mktSpread = parseFloat(r.market_spread_home);
+    // Determine if our pick was the home team (negative spread = home fav)
+    // pick string contains team name + spread, e.g. "Eastern Washington Eagles -3"
+    const homeTeam = (r.home_team || '');
+    const awayTeam = (r.away_team || '');
+    const homeInit = teamInitials(homeTeam);
+    const awayInit = teamInitials(awayTeam);
+    const pickIsHome = pickStr.includes(homeTeam.split(' ')[0]) || 
+                       (!isNaN(mktSpread) && parseFloat(r.pred_margin_blend||0) > 0);
+    if (!isNaN(hs) && !isNaN(as_)) {
+      const actualMarginHome = hs - as_;
+      // Away on top, home on bottom, then actual margin
+      const actualMarginAway = -actualMarginHome;
+      const actualMarginSign = actualMarginAway >= 0 ? '+' : '';
+      // Show pick team's actual cover margin
+      // Cover margin = how much our pick team beat the spread by
+      // positive = covered (win), negative = didn't cover (loss), regardless of +/- side
+      // picked home: home margin vs spread = (hs - as_) - (-mktSpread) if home is fav
+      // Unified: pick team's raw margin minus the spread they were given
+      const pickActualMargin = pickIsHome ? (hs - as_) : (as_ - hs);
+      // spread as given TO the pick team (positive = underdog, negative = favorite)
+      const pickSpread = pickIsHome ? -mktSpread : mktSpread;
+      const coverMargin = pickActualMargin - pickSpread;
+      const cvSign = coverMargin >= 0 ? '+' : '';
+      detailHtml = `<div class="yest-details yest-sp">` +
+        `${resultWord}` +
+        `<div class="yest-sp-scores">` +
+        `<span>${awayInit} ${as_}</span>` +
+        `<span>${homeInit} ${hs}</span>` +
+        `<span>(${cvSign}${coverMargin.toFixed(1)})</span>` +
+        `</div>` +
+        `</div>`;
+    } else {
+      detailHtml = `<div class="yest-details">${resultWord}</div>`;
     }
-  )
-  if (!is.null(result$game_preds))   all_game_preds[[code]]   <- result$game_preds
-  if (!is.null(result$winner_probs)) all_winner_probs[[code]] <- result$winner_probs
+  } else if (tabKey === 'tt') {
+    const teamActual = parseFloat(match.actual_team_pts || match.actual_team_total || match.actual_total);
+    const teamBet = (r.bet || '').toUpperCase();
+    const teamLine = fmt(r.market_team_total || r.market_total, 1);
+    if (!isNaN(teamActual)) {
+      detailHtml = `<div class="yest-details">${resultWord} · Actual: <span class="yest-actual">${teamActual}</span> · <span style="color:var(--muted)">Bet:</span> <span style="color:#fff">${teamBet} ${teamLine}</span></div>`;
+    } else {
+      detailHtml = `<div class="yest-details">${resultWord} · Bet: ${teamBet} ${teamLine}</div>`;
+    }
+  }
+
+  return `<div class="yest-result">${checkmark}<div>${detailHtml}</div></div>`;
 }
 
-# ── COMPILE OUTPUTS ───────────────────────────────────────────────────────────
-cat("\n=== WRITING OUTPUTS ===\n")
+// ── INIT ───────────────────────────────────────────────────────────────────
+async function init() {
+  const dates = candidateDates(); // [today, yesterday, tomorrow] in Central
+  document.getElementById('run-date').textContent = fmtDateOrdinal(dates[0]);
 
-# 1. All game-level spread predictions
-game_preds_all <- bind_rows(all_game_preds) %>%
-  mutate(across(where(is.numeric), ~ round(.x, 4))) %>%
-  arrange(tournament_code, round_number, game_id)
+  const meta = await fetch(`${BASE}/meta.json?t=` + Date.now())
+    .then(r => r.ok ? r.json() : null).catch(() => null);
+  if (meta && meta.run_timestamp) {
+    const el = document.getElementById('updated');
+    if (el) el.textContent = fmtLastRun(meta.run_timestamp);
+  }
 
-write_csv(game_preds_all, file.path(OUT_DIR, "tournament_game_predictions.csv"), na = "")
-cat("Wrote tournament_game_predictions.csv  (", nrow(game_preds_all), "games)\n")
+  // Pre-load history for yesterday grading
+  for (const [tabKey, cfg] of Object.entries(TABS)) {
+    const rows = await fetchCSV(`${BASE}/data/${cfg.histFile}.csv`);
+    historyCache[tabKey] = rows || [];
+  }
 
-# 2. Winner per conference (top projected winner only)
-winner_summary <- bind_rows(all_winner_probs) %>%
-  group_by(tournament_code) %>%
-  slice_max(win_prob, n = 1, with_ties = FALSE) %>%
-  ungroup() %>%
-  left_join(
-    bracket_raw %>% select(tournament_code, conference, tournament_name) %>% distinct(),
-    by = "tournament_code"
-  ) %>%
-  select(tournament_code, conference, tournament_name, projected_winner = team_name, win_prob, win_count) %>%
-  mutate(win_prob_pct = paste0(round(win_prob * 100, 1), "%")) %>%
-  arrange(desc(win_prob))
+  // Pre-load odds history for line movement (today + tomorrow keyed by date)
+  oddsHistByDate = {};
+  const todayRows = await fetchCSV(`${BASE}/data/odds_history_${dates[0]}.csv`) || [];
+  const tmrRows   = await fetchCSV(`${BASE}/data/odds_history_${dates[2]}.csv`) || [];
+  oddsHistByDate[dates[0]] = todayRows;
+  oddsHistByDate[dates[2]] = tmrRows;
+  oddsHistCache = todayRows; // keep for backwards compat
 
-write_csv(winner_summary, file.path(OUT_DIR, "tournament_winners.csv"), na = "")
-cat("Wrote tournament_winners.csv            (", nrow(winner_summary), "conferences)\n")
-
-# 3. Full odds — all teams, sorted by conference then probability
-full_odds <- bind_rows(all_winner_probs) %>%
-  filter(win_prob > 0) %>%
-  left_join(
-    bracket_raw %>% select(tournament_code, conference, tournament_name) %>% distinct(),
-    by = "tournament_code"
-  ) %>%
-  select(tournament_code, conference, rank, team_name, team_id, win_prob, win_count) %>%
-  mutate(
-    win_prob_pct = paste0(round(win_prob * 100, 1), "%"),
-    # Implied American odds
-    impl_odds = ifelse(win_prob >= 0.5,
-                       paste0("-", round((win_prob / (1 - win_prob)) * 100)),
-                       paste0("+", round(((1 - win_prob) / win_prob) * 100)))
-  ) %>%
-  arrange(tournament_code, rank)
-
-write_csv(full_odds, file.path(OUT_DIR, "tournament_full_odds.csv"), na = "")
-cat("Wrote tournament_full_odds.csv          (", nrow(full_odds), "teams)\n")
-
-# ── PRINT SUMMARY ─────────────────────────────────────────────────────────────
-cat("\n")
-cat("========================================\n")
-cat("   PROJECTED CONFERENCE TOURNAMENT WINNERS\n")
-cat("========================================\n")
-cat(sprintf("%-8s %-30s %-26s %s\n", "CONF", "TOURNAMENT", "WINNER", "WIN%"))
-cat(strrep("-", 80), "\n")
-for (i in seq_len(nrow(winner_summary))) {
-  r <- winner_summary[i,]
-  cat(sprintf("%-8s %-30s %-26s %s\n",
-              r$tournament_code,
-              str_trunc(r$tournament_name, 28),
-              str_trunc(r$projected_winner, 24),
-              r$win_prob_pct))
+  await loadDay('today');
+  loadRecords();
 }
-cat("========================================\n\n")
-cat("DONE. Outputs in:", OUT_DIR, "\n")
+
+async function loadDay(day) {
+  currentDay = day;
+  const dates = candidateDates(); // [today, yesterday, tomorrow]
+  const dateStr = day === 'today' ? dates[0] : day === 'yesterday' ? dates[1] : dates[2];
+
+  // Update day button styles
+  ['yesterday','today','tomorrow'].forEach(d => {
+    const btn = document.getElementById(`btn-${d}`);
+    if (btn) btn.classList.toggle('active', d === day);
+  });
+
+  // Update header date
+  document.getElementById('run-date').textContent = fmtDateOrdinal(dateStr);
+
+  for (const [tabKey, cfg] of Object.entries(TABS)) {
+    const panel = document.getElementById(`panel-${tabKey}`);
+    panel.innerHTML = `<div class="empty"><div class="icon">⟳</div><p>Loading…</p></div>`;
+
+    let rows = null;
+    if (day === 'today') {
+      rows = await fetchCSV(`${BASE}/data/${cfg.todayFile}.csv`);
+    } else if (day === 'tomorrow') {
+      rows = await fetchCSV(`${BASE}/data/${cfg.tmrFile}.csv`);
+    } else {
+      // Yesterday: find in history by date
+      const hist = historyCache[tabKey] || [];
+      rows = hist.filter(r => r.date === dateStr);
+    }
+
+    if (rows && rows.length) {
+      document.getElementById(`ct-${tabKey}`).textContent = String(rows.length);
+      panel.innerHTML = buildCards(rows, tabKey, day);
+    } else {
+      document.getElementById(`ct-${tabKey}`).textContent = '0';
+      let msg = day === 'tomorrow' ? `Tomorrow's picks will appear as games are confirmed.` : `No ${cfg.label} data for ${dateStr}.`;
+      panel.innerHTML = `<div class="empty"><div class="icon">${day === 'tomorrow' ? '🔭' : '📭'}</div><p>${msg}</p></div>`;
+    }
+  }
+}
+
+async function switchDay(day) {
+  await loadDay(day);
+}
+
+// ── TAB SWITCHING ──────────────────────────────────────────────────────────
+function switchTab(key) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  const btn = document.querySelector(`.tab[data-tab="${key}"]`);
+  const panel = document.getElementById(`panel-${key}`);
+  if (btn) btn.classList.add('active');
+  if (panel) panel.classList.add('active');
+  history.replaceState(null, '', '#' + key);
+}
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => switchTab(t.dataset.tab));
+});
+// Restore tab from hash on load
+const hashTab = window.location.hash.replace('#','');
+if (hashTab && document.querySelector(`.tab[data-tab="${hashTab}"]`)) {
+  switchTab(hashTab);
+}
+
+init();
+
+</script>
+</body>
+</html>
