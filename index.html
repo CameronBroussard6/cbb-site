@@ -793,13 +793,25 @@ function computeAGScore(row, tabKey) {
   const bet = (row.bet || row.pick || '').toUpperCase();
   if (!bet || bet === '' || bet === 'PASS') return null;
 
-  const cols = MODEL_COLS[tabKey] || [];
-  if (cols.length === 0) return null;
+  let agrees = 0, total = 0;
 
-  let market, agrees = 0, total = 0;
-
-  if (tabKey === 'gt' || tabKey === 'tt') {
-    market = parseFloat(row.market_total || row.market_team_total || 0);
+  if (tabKey === 'sp') {
+    // 3 models: pred_margin_04, pred_margin_09, pred_margin_10
+    // positive margin = home team wins
+    // pick is home if pick string contains home team's first word
+    const pickStr = (row.pick || '').trim();
+    const homeFirst = (row.home_team || '').split(' ')[0].toLowerCase();
+    const pickIsHome = homeFirst.length > 1 && pickStr.toLowerCase().includes(homeFirst);
+    [row.pred_margin_04, row.pred_margin_09, row.pred_margin_10].forEach(m => {
+      const v = parseFloat(m);
+      if (isNaN(v)) return;
+      total++;
+      if ((v > 0) === pickIsHome) agrees++;
+    });
+  } else {
+    const cols = MODEL_COLS[tabKey] || [];
+    if (cols.length === 0) return null;
+    const market = parseFloat(row.market_total || row.market_team_total || 0);
     if (isNaN(market)) return null;
     cols.forEach(col => {
       const pred = parseFloat(row[col]);
@@ -807,28 +819,6 @@ function computeAGScore(row, tabKey) {
       total++;
       const predSide = pred > market ? 'OVER' : 'UNDER';
       if (predSide === bet) agrees++;
-    });
-  } else if (tabKey === 'sp') {
-    // Determine pick direction from the pick column (team name + spread)
-    // pick e.g. "Eastern Washington Eagles -3" or "Georgia Southern +5"
-    const pickStr = (row.pick || '').trim();
-    const homeTeamFirst = (row.home_team || '').split(' ')[0].toLowerCase();
-    const pickLower = pickStr.toLowerCase();
-    // Check if pick team is home team
-    const pickIsHome = homeTeamFirst.length > 1 && pickLower.includes(homeTeamFirst);
-    // pred_margin_XX: positive = home team wins by that margin
-    // model agrees with pick if: pickIsHome && margin > 0, or !pickIsHome && margin < 0
-    const margins = [row.pred_margin_04, row.pred_margin_09, row.pred_margin_10];
-    // Also include blend if available
-    if (row.pred_margin_blend !== undefined && row.pred_margin_blend !== '') {
-      margins.push(row.pred_margin_blend);
-    }
-    margins.forEach(m => {
-      const v = parseFloat(m);
-      if (isNaN(v)) return;
-      total++;
-      const modelPicksHome = v > 0;
-      if (modelPicksHome === pickIsHome) agrees++;
     });
   }
 
@@ -1212,7 +1202,7 @@ function teamInitials(name) {
 
 function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
   if (!oddsHist || oddsHist.length === 0) return '';
-  const gameRows = oddsHist.filter(r => r.game_id === gameId);
+  const gameRows = oddsHist.filter(r => String(r.game_id) === String(gameId));
   if (gameRows.length < 1) return '';
 
   const sorted = gameRows.slice().sort((a,b) => a.run_time > b.run_time ? 1 : -1);
