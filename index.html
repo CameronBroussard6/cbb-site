@@ -1414,7 +1414,7 @@ async function loadDay(day) {
     // Ensure odds history is loaded for this day before building cards
     if ((day === 'today' || day === 'tomorrow') && oddsHistByDate) {
       const oddsDate = day === 'tomorrow' ? candidateDates()[2] : candidateDates()[0];
-      if (!oddsHistByDate[oddsDate]) {
+      if (!oddsHistByDate[oddsDate] || oddsHistByDate[oddsDate].length === 0) {
         const fetched = await fetchCSV(`${BASE}/data/odds_history_${oddsDate}.csv`);
         oddsHistByDate[oddsDate] = fetched || [];
         if (day === 'today') oddsHistCache = oddsHistByDate[oddsDate];
