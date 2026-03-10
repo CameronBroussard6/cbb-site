@@ -809,10 +809,20 @@ function computeAGScore(row, tabKey) {
       if (predSide === bet) agrees++;
     });
   } else if (tabKey === 'sp') {
-    // Pick direction: positive edge_blend = home favored by model
-    const blendMargin = parseFloat(row.pred_margin_blend || 0);
-    const pickIsHome = blendMargin > 0;
+    // Determine pick direction from the pick column (team name + spread)
+    // pick e.g. "Eastern Washington Eagles -3" or "Georgia Southern +5"
+    const pickStr = (row.pick || '').trim();
+    const homeTeamFirst = (row.home_team || '').split(' ')[0].toLowerCase();
+    const pickLower = pickStr.toLowerCase();
+    // Check if pick team is home team
+    const pickIsHome = homeTeamFirst.length > 1 && pickLower.includes(homeTeamFirst);
+    // pred_margin_XX: positive = home team wins by that margin
+    // model agrees with pick if: pickIsHome && margin > 0, or !pickIsHome && margin < 0
     const margins = [row.pred_margin_04, row.pred_margin_09, row.pred_margin_10];
+    // Also include blend if available
+    if (row.pred_margin_blend !== undefined && row.pred_margin_blend !== '') {
+      margins.push(row.pred_margin_blend);
+    }
     margins.forEach(m => {
       const v = parseFloat(m);
       if (isNaN(v)) return;
@@ -1150,7 +1160,7 @@ function buildCard(r, rank, tabKey, day='today') {
     ? buildYestResult(r, tabKey, historyCache[tabKey])
     : '';
 
-  const bodyWidth = (tabKey === 'sp' && day === 'yesterday') ? '98px' : '82px';
+  const bodyWidth = (tabKey === 'sp' && day === 'yesterday') ? '106px' : '82px';
   return `
 <div class="game-card">
   <div class="gc-head">
@@ -1203,7 +1213,7 @@ function teamInitials(name) {
 function buildLineMoveHtml(gameId, tabKey, oddsHist, row) {
   if (!oddsHist || oddsHist.length === 0) return '';
   const gameRows = oddsHist.filter(r => r.game_id === gameId);
-  if (gameRows.length < 2) return '';
+  if (gameRows.length < 1) return '';
 
   const sorted = gameRows.slice().sort((a,b) => a.run_time > b.run_time ? 1 : -1);
   const first = sorted[0];
