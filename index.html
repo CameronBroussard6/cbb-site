@@ -1140,7 +1140,9 @@ function buildCard(r, rank, tabKey, day='today') {
 
   // Line movement (today/tomorrow only)
   const lmDate = day === 'tomorrow' ? candidateDates()[2] : candidateDates()[0];
-  const lmHist = (oddsHistByDate && oddsHistByDate[lmDate]) ? oddsHistByDate[lmDate] : oddsHistCache;
+  const lmHist = (oddsHistByDate && oddsHistByDate[lmDate] && oddsHistByDate[lmDate].length > 0)
+    ? oddsHistByDate[lmDate]
+    : (day === 'today' ? oddsHistCache : []);
   const lineMoveHtml = (day === 'today' || day === 'tomorrow')
     ? buildLineMoveHtml(r.game_id, tabKey, lmHist, r)
     : '';
@@ -1366,7 +1368,17 @@ async function init() {
   oddsHistByDate[dates[2]] = tmrRows;
   oddsHistCache = todayRows; // keep for backwards compat
 
-  await loadDay('today');
+  // Restore day + tab from hash
+  const saved = parseHash();
+  const validTabs = Object.keys(TABS);
+  const initTab = validTabs.includes(saved.tab) ? saved.tab : 'gt';
+  const validDays = ['today', 'yesterday', 'tomorrow'];
+  const initDay = validDays.includes(saved.day) ? saved.day : 'today';
+
+  // Switch to saved tab first (instant, no data load)
+  switchTab(initTab);
+  // Then load the saved day
+  await loadDay(initDay);
   loadRecords();
 }
 
@@ -1399,6 +1411,16 @@ async function loadDay(day) {
       rows = hist.filter(r => r.date === dateStr);
     }
 
+    // Ensure odds history is loaded for this day before building cards
+    if ((day === 'today' || day === 'tomorrow') && oddsHistByDate) {
+      const oddsDate = day === 'tomorrow' ? candidateDates()[2] : candidateDates()[0];
+      if (!oddsHistByDate[oddsDate]) {
+        const fetched = await fetchCSV(`${BASE}/data/odds_history_${oddsDate}.csv`);
+        oddsHistByDate[oddsDate] = fetched || [];
+        if (day === 'today') oddsHistCache = oddsHistByDate[oddsDate];
+      }
+    }
+
     if (rows && rows.length) {
       document.getElementById(`ct-${tabKey}`).textContent = String(rows.length);
       panel.innerHTML = buildCards(rows, tabKey, day);
@@ -1412,6 +1434,9 @@ async function loadDay(day) {
 
 async function switchDay(day) {
   await loadDay(day);
+  // Update hash to reflect current day + active tab
+  const activeTab = document.querySelector('.tab.active');
+  if (activeTab) history.replaceState(null, '', '#' + day + '-' + activeTab.dataset.tab);
 }
 
 // ── TAB SWITCHING ──────────────────────────────────────────────────────────
@@ -1422,15 +1447,23 @@ function switchTab(key) {
   const panel = document.getElementById(`panel-${key}`);
   if (btn) btn.classList.add('active');
   if (panel) panel.classList.add('active');
-  history.replaceState(null, '', '#' + key);
+  history.replaceState(null, '', '#' + currentDay + '-' + key);
 }
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => switchTab(t.dataset.tab));
 });
-// Restore tab from hash on load
-const hashTab = window.location.hash.replace('#','');
-if (hashTab && document.querySelector(`.tab[data-tab="${hashTab}"]`)) {
-  switchTab(hashTab);
+
+// Parse hash: supports legacy "#gt" or new "#today-gt" / "#tomorrow-sp"
+function parseHash() {
+  const h = window.location.hash.replace('#', '');
+  if (!h) return { day: 'today', tab: 'gt' };
+  const parts = h.split('-');
+  const days = ['today', 'yesterday', 'tomorrow'];
+  if (days.includes(parts[0])) {
+    return { day: parts[0], tab: parts[1] || 'gt' };
+  }
+  // Legacy: just a tab key
+  return { day: 'today', tab: parts[0] };
 }
 
 init();
