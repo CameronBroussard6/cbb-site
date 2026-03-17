@@ -1,7 +1,7 @@
 model,avg_abs_error
-ensemble_mae,14.32
-ridge_mae,14.57
-recency_mae,14.74
-from_team_mae,15.32
-elo_sim_mae,15.71
-xgb_elo_mae,16.21
+ensemble_mae,14.15
+ridge_mae,14.31
+recency_mae,14.67
+from_team_mae,15.11
+elo_sim_mae,15.52
+xgb_elo_mae,16.02
