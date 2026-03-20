@@ -1,5 +1,5 @@
 label,picks,wins,losses,pushes,win_pct,avg_brain_score,avg_score_winners,avg_score_losers
-Top 1 per day,11,4,7,0,36.4,12.73,11,13.71
-Top 3 per day,33,15,16,2,48.4,10.67,10.53,11.11
-Top 5 per day,55,27,26,2,50.9,9.59,9.37,9.92
-Top 10 per day,110,56,50,4,52.8,8.07,7.96,8.31
+Top 1 per day,13,5,8,0,38.5,12.4,11.04,13.25
+Top 3 per day,39,18,19,2,48.6,10.47,10.4,10.78
+Top 5 per day,65,32,31,2,50.8,9.39,9.22,9.64
+Top 10 per day,130,64,62,4,50.8,7.83,7.85,7.9
