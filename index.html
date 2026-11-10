@@ -603,7 +603,7 @@ main { padding: 14px; }
 <div class="records-wrap">
   <div class="records-header">
     <div class="records-header-line"></div>
-    <div class="records-header-label">Records</div>
+    <div class="records-header-label">Records · This Season</div>
     <div class="records-header-line"></div>
   </div>
   <div class="records">
@@ -782,6 +782,19 @@ function fmt(v, d=1) {
   return s.endsWith('.0') ? String(Math.round(n)) : s;
 }
 
+// ── EARLY-SEASON HELPERS ──
+// The pipeline blanks bet/pick (writes NA) until both teams have enough games; those rows are projection-only.
+function isNA(v) { const s = String(v == null ? '' : v).trim().toUpperCase(); return s === '' || s === 'NA' || s === 'NAN'; }
+function hasPick(row) {
+  if (String(row.early_season || '').trim().toUpperCase() === 'TRUE') return false;
+  return !isNA(row.bet) || !isNA(row.pick);
+}
+// Records count the current season only (July 1 rollover, Central time)
+function seasonStartStr() {
+  const t = todayCentral(); const y = parseInt(t.slice(0,4), 10), m = parseInt(t.slice(5,7), 10);
+  return `${m >= 7 ? y : y - 1}-07-01`;
+}
+
 function fmtRec(w, l) { return (w+l===0) ? '—' : `${w}/${w+l}`; }
 function pct(w, l)     { return (w+l===0) ? '—' : `${Math.round(w/(w+l)*100)}%`; }
 
@@ -791,7 +804,7 @@ function pct(w, l)     { return (w+l===0) ? '—' : `${Math.round(w/(w+l)*100)}%
 // For spreads: how many models agree with the spread pick
 function computeAGScore(row, tabKey) {
   const bet = (row.bet || row.pick || '').toUpperCase();
-  if (!bet || bet === '' || bet === 'PASS') return null;
+  if (!bet || bet === '' || bet === 'PASS' || bet === 'NA') return null;
 
   let agrees = 0, total = 0;
 
@@ -852,6 +865,7 @@ function edgeScoreClass(score) {
 
 // ── BET BADGE ──────────────────────────────────────────────────────────────
 function betBadge(row, tabKey) {
+  if (!hasPick(row)) return `<span class="badge b-pass">PROJECTION</span>`;
   const raw = (row.bet || row.pick || '').toUpperCase();
 
   if (tabKey === 'gt' || tabKey === 'tt') {
@@ -893,7 +907,7 @@ function computeRecord(rows, resultCol, topN = null) {
     });
     eligible = [];
     Object.values(byDate).forEach(dayRows => {
-      const sorted = dayRows.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
+      const sorted = dayRows.slice().sort((a,b) => (parseFloat(b.brain_score)||0) - (parseFloat(a.brain_score)||0));
       eligible.push(...sorted.slice(0, topN));
     });
   }
@@ -915,8 +929,9 @@ async function loadRecords() {
   ];
 
   for (const cfg of configs) {
-    const rows = await fetchCSV(`${BASE}/data/${cfg.histFile}.csv`);
-    if (!rows || !rows.length) continue;
+    const allRows = await fetchCSV(`${BASE}/data/${cfg.histFile}.csv`);
+    const cutoff = seasonStartStr();
+    const rows = (allRows || []).filter(r => (r.date || '') >= cutoff);   // this season only; empty -> dashes
 
     const all  = computeRecord(rows, cfg.resultCol);
     const top5 = computeRecord(rows, cfg.resultCol, 5);
@@ -944,7 +959,7 @@ function buildCards(rows, tabKey, day='today') {
     if (tabKey === 'tt') return !isTBD(r.team_name);
     return !isTBD(r.away_team) && !isTBD(r.home_team);
   });
-  const sorted = valid.slice().sort((a,b) => parseFloat(b.brain_score||0) - parseFloat(a.brain_score||0));
+  const sorted = valid.slice().sort((a,b) => (parseFloat(b.brain_score)||0) - (parseFloat(a.brain_score)||0));
 
   return `<div class="game-cards">${sorted.map((r, i) => buildCard(r, i, tabKey, day)).join('')}</div>`;
 }
@@ -992,6 +1007,7 @@ function buildCard(r, rank, tabKey, day='today') {
     const mkt = parseFloat(r.market_total);
     const betIsOver = (r.bet||'').toUpperCase() === 'OVER';
     const pc = v => {
+      if (!hasPick(r)) return '';
       const n = parseFloat(v);
       if (isNaN(n)||isNaN(mkt)) return '';
       const modelOver = n >= mkt;
@@ -1019,6 +1035,7 @@ function buildCard(r, rank, tabKey, day='today') {
     const mkt = parseFloat(r.market_team_total);
     const betIsOverTT = (r.bet||'').toUpperCase() === 'OVER';
     const pc = v => {
+      if (!hasPick(r)) return '';
       const n = parseFloat(v);
       if (isNaN(n)||isNaN(mkt)) return '';
       const modelOver = n >= mkt;
@@ -1157,7 +1174,7 @@ function buildCard(r, rank, tabKey, day='today') {
 <div class="game-card">
   <div class="gc-head">
     <div class="gc-matchup">
-      <div class="gc-rank" style="color:${rank===0 ? '#f5c542' : rank<5 ? '#f0a05a' : '#ffffff'};font-weight:${rank<5?'700':'500'}">#${rank+1}</div>
+      <div class="gc-rank" style="color:${!hasPick(r) ? '#707784' : rank===0 ? '#f5c542' : rank<5 ? '#f0a05a' : '#ffffff'};font-weight:${rank<5?'700':'500'}">${hasPick(r) ? '#'+(rank+1) : '·'}</div>
       <div class="gc-teams">${matchup}</div>
     </div>
     <div>${badge}</div>
