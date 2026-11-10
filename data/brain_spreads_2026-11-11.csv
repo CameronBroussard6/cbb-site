@@ -1,0 +1,68 @@
+rank,date,game_id,away_team,home_team,market_spread_str,pick,model_spread_str,pred_margin_04,pred_margin_09,pred_margin_10,pred_margin_blend,edge_04,edge_09,edge_10,edge_blend,agree_bonus,all3_agree_bonus,hit_bonus,disagree_pen,edge_pts,brain_score,line_move_spread,line_move_pts,n_snapshots,elo_diff_04,market_spread_home,home_gp,away_gp,min_gp,early_season
+NA,2026-11-11,401925702,Jacksonville State Gamecocks,Houston Cougars,Houston Cougars -35,NA,Houston Cougars -12,21,9,9,12,-14,-26,-26,-23,2.8,1.5,0.6,0,NA,NA,NA,0,NA,234.63278247085327,-35,2,2,2,TRUE
+NA,2026-11-11,401925863,Oral Roberts Golden Eagles,Tulsa Golden Hurricane,Tulsa Golden Hurricane -19,NA,Tulsa Golden Hurricane -40,23,33,52,40,4,14,33,21,2.8,1.5,0.6,0,NA,NA,NA,0,NA,207.71887224319244,-19,2,2,2,TRUE
+NA,2026-11-11,401920903,James Madison Dukes,Delaware Blue Hens,Delaware Blue Hens +2.5,NA,Delaware Blue Hens -16,3,-2,31,16,5.5,0.5,33.5,18.5,2.8,1.5,0.6,0,NA,NA,NA,0,NA,-11.00578653268326,2.5,2,2,2,TRUE
+NA,2026-11-11,401925915,Portland State Vikings,Colorado State Rams,Colorado State Rams -15,NA,Colorado State Rams -0.5,15,13.5,-13,0.5,-0,-1.5,-28,-14.5,2.8,1.5,0.6,0,NA,NA,NA,0,NA,130.11536052781548,-15,2,2,2,TRUE
+NA,2026-11-11,401918978,North Carolina A&T Aggies,East Carolina Pirates,East Carolina Pirates -10.5,NA,North Carolina A&T Aggies -3,6,5,-12,-3,-4.5,-5.5,-22.5,-13.5,2.8,1.5,0.6,0,NA,NA,NA,0,NA,14.248660924869457,-10.5,2,2,2,TRUE
+NA,2026-11-11,401918992,Saint Joseph's Hawks,South Florida Bulls,South Florida Bulls +7,NA,South Florida Bulls -6,10,1.5,6,6,17,8.5,13,13,2.8,1.5,0.6,0,NA,NA,NA,0,NA,36.61657664588961,7,2,2,2,TRUE
+NA,2026-11-11,401928824,Robert Morris Colonials,Arkansas Razorbacks,Arkansas Razorbacks -29.5,NA,Arkansas Razorbacks -32.5,13,10.5,53.5,32.5,-16.5,-19,24,3,1,0,0,5,NA,NA,NA,0,NA,157.67693840819493,-29.5,2,2,2,TRUE
+NA,2026-11-11,401926062,Lindenwood Lions,Nebraska Cornhuskers,Nebraska Cornhuskers -34.5,NA,Nebraska Cornhuskers -22.5,8.5,22,29.5,22.5,-26,-12.5,-5,-12,2.8,1.5,0.6,0,NA,NA,NA,0,NA,147.7647080922918,-34.5,2,3,2,TRUE
+NA,2026-11-11,401926863,Kent State Golden Flashes,UNC Wilmington Seahawks,UNC Wilmington Seahawks -7,NA,UNC Wilmington Seahawks -18.5,7,-6.5,36.5,18.5,-0,-13.5,29.5,11.5,1,0,0,2.5,NA,NA,NA,0,NA,68.58470426234885,-7,2,2,2,TRUE
+NA,2026-11-11,401911263,Cornell Big Red,St. Bonaventure Bonnies,St. Bonaventure Bonnies -8,NA,Cornell Big Red -3.5,4,-11.5,-3,-3.5,-4,-19.5,-11,-11.5,2.8,1.5,0.6,0,NA,NA,NA,0,NA,-21.158250430629774,-8,2,3,2,TRUE
+NA,2026-11-11,401925858,Charleston Cougars,Temple Owls,Temple Owls 0,NA,Charleston Cougars -10,-9,-1,-15,-10,-9,-1,-15,-10,2.8,1.5,0.6,0,NA,NA,NA,0,NA,-157.17752056146492,0,2,2,2,TRUE
+NA,2026-11-11,401917521,UTSA Roadrunners,Seattle U Redhawks,Seattle U Redhawks -13,NA,Seattle U Redhawks -22,18,17.5,27,22,5,4.5,14,9,2.8,1.5,0.6,0,NA,NA,NA,0,NA,251.3548105444179,-13,2,2,2,TRUE
+NA,2026-11-11,401921175,Southern Indiana Screaming Eagles,IU Indianapolis Jaguars,IU Indianapolis Jaguars -7,NA,IU Indianapolis Jaguars -19,8.5,6.5,30.5,19,1.5,-0.5,23.5,12,1,0,0.6,0,NA,NA,NA,0,NA,1.409911777377829,-7,2,3,2,TRUE
+NA,2026-11-11,401921821,Saint Peter's Peacocks,South Carolina Gamecocks,South Carolina Gamecocks -21.5,NA,South Carolina Gamecocks -31.5,21.5,14,45,31.5,-0,-7.5,23.5,10,1,0,0,1.5,NA,NA,NA,0,NA,158.9446561520815,-21.5,2,3,2,TRUE
+NA,2026-11-11,401928794,Pepperdine Waves,Sam Houston Bearkats,Sam Houston Bearkats 0,NA,Pepperdine Waves -8.5,7,5,-22.5,-8.5,7,5,-22.5,-8.5,1,0,0,2.4,NA,NA,NA,0,NA,82.2472696769596,0,2,3,2,TRUE
+NA,2026-11-11,401911346,Cal Poly Mustangs,Grand Canyon Lopes,Grand Canyon Lopes -18,NA,Grand Canyon Lopes -11,15.5,10,8.5,11,-2.5,-8,-9.5,-7,2.8,1.5,0.6,0,NA,NA,NA,0,NA,114.91908975317187,-18,2,2,2,TRUE
+NA,2026-11-11,401909524,Marquette Golden Eagles,Michigan Wolverines,Michigan Wolverines -4.5,NA,Michigan Wolverines -3,6,26.5,-10,3,1.5,22,-14.5,-1.5,1,0,0,2.5,NA,NA,NA,0,NA,125.75388160368334,-4.5,2,2,2,TRUE
+NA,2026-11-11,401917523,Pacific Tigers,Long Beach State Beach,Long Beach State Beach +6.5,NA,Pacific Tigers -12,-4,4.5,-24,-12,2.5,11,-17.5,-5.5,1,0,0,2.2,NA,NA,NA,0,NA,-205.6302552294935,6.5,2,2,2,TRUE
+NA,2026-11-11,401918054,USC Trojans,California Golden Bears,California Golden Bears +7,NA,USC Trojans -1,4.5,2.5,-5.5,-1,11.5,9.5,1.5,6,2.8,1.5,0.6,0,NA,NA,NA,0,NA,-14.922329165654672,7,3,2,2,TRUE
+NA,2026-11-11,401917522,Santa Clara Broncos,North Texas Mean Green,North Texas Mean Green +1,NA,North Texas Mean Green -3.5,7,-14,11,3.5,8,-13,12,4.5,1,0,0.6,2.5,NA,NA,NA,0,NA,-92.81337413234974,1,2,3,2,TRUE
+NA,2026-11-11,401911454,Nevada Wolf Pack,UC Santa Barbara Gauchos,UC Santa Barbara Gauchos +1.5,NA,UC Santa Barbara Gauchos -3.5,2.5,7.5,1.5,3.5,4,9,3,5,2.8,1.5,0.6,0,NA,NA,NA,0,NA,-41.21783617340725,1.5,2,2,2,TRUE
+NA,2026-11-11,401926868,Milwaukee Panthers,Indiana State Sycamores,Indiana State Sycamores -4.5,NA,Indiana State Sycamores -9.5,7,12,9,9.5,2.5,7.5,4.5,5,2.8,1.5,0.6,0,NA,NA,NA,0,NA,-0.6888430591404813,-4.5,2,3,2,TRUE
+NA,2026-11-11,401924735,Stony Brook Seawolves,Princeton Tigers,Princeton Tigers -4,NA,Princeton Tigers -1,2.5,14.5,-7,1,-1.5,10.5,-11,-3,1,0,0.6,2.1,NA,NA,NA,0,NA,-2.854111903095827,-4,3,2,2,TRUE
+NA,2026-11-11,401911230,Loyola Chicago Ramblers,Air Force Falcons,Air Force Falcons +8.5,NA,Loyola Chicago Ramblers -7,-3.5,5,-14.5,-7,5,13.5,-6,1.5,1,0,0.6,1.2,NA,NA,NA,0,NA,-110.830041739953,8.5,3,2,2,TRUE
+NA,2026-11-11,401920740,Campbell Fighting Camels,East Tennessee State Buccaneers,East Tennessee State Buccaneers -5,NA,East Tennessee State Buccaneers -8,3.5,9,9,8,-1.5,4,4,3,0.8,0,0.6,0,NA,NA,NA,0,NA,49.09047200516488,-5,2,2,2,TRUE
+NA,2026-11-11,401918452,William & Mary Tribe,Florida Atlantic Owls,Florida Atlantic Owls -5,NA,Florida Atlantic Owls -4,-2,3.5,7,4,-7,-1.5,2,-1,1,0,0.6,0,NA,NA,NA,0,NA,-80.16519479999079,-5,2,2,2,TRUE
+NA,2026-11-11,401928996,Valparaiso Beacons,South Dakota State Jackrabbits,South Dakota State Jackrabbits +2,NA,Valparaiso Beacons -1,1.5,1,-3.5,-1,3.5,3,-1.5,1,1,0,0.6,0,NA,NA,NA,0,NA,-46.45704533675553,2,2,2,2,TRUE
+NA,2026-11-11,401920680,Colgate Raiders,St. John's Red Storm,St. John's Red Storm NANA,NA,St. John's Red Storm -26.5,18.5,30,28.5,26.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,318.618514247818,NA,2,2,2,TRUE
+NA,2026-11-11,401930177,Arkansas-Pine Bluff Golden Lions,UCLA Bruins,UCLA Bruins NANA,NA,UCLA Bruins -51,44.5,51.5,53.5,51,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,319.7941622122414,NA,2,2,2,TRUE
+NA,2026-11-11,401919759,Fairleigh Dickinson Knights,East Texas A&M Lions,East Texas A&M Lions NANA,NA,East Texas A&M Lions -26,11,9,42,26,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,44.284102244404494,NA,2,3,2,TRUE
+NA,2026-11-11,401921005,Kansas City Roos,Florida A&M Rattlers,Florida A&M Rattlers NANA,NA,Kansas City Roos -5.5,5.5,13.5,-20.5,-5.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,21.89460407996944,NA,2,2,2,TRUE
+NA,2026-11-11,401920234,Dartmouth Big Green,UAlbany Great Danes,UAlbany Great Danes NANA,NA,Dartmouth Big Green -2.5,0.5,-1,-5,-2.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-100.5012594712714,NA,3,3,3,TRUE
+NA,2026-11-11,401911519,Incarnate Word Cardinals,UC Davis Aggies,UC Davis Aggies NANA,NA,UC Davis Aggies -18.5,21,21,16,18.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,214.6509415829712,NA,2,3,2,TRUE
+NA,2026-11-11,401925717,Bethune-Cookman Wildcats,San Diego State Aztecs,San Diego State Aztecs NANA,NA,San Diego State Aztecs -29.5,22.5,29.5,33.5,29.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,290.05573402449227,NA,2,3,2,TRUE
+NA,2026-11-11,401921181,Pennsylvania Quakers,Navy Midshipmen,Navy Midshipmen NANA,NA,Navy Midshipmen -7.5,4.5,-1,13.5,7.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-21.119004985234596,NA,3,1,1,TRUE
+NA,2026-11-11,401926211,Voorhees Tigers,Wofford Terriers,Wofford Terriers NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,3,0,0,TRUE
+NA,2026-11-11,401926206,Virginia Lynchburg Dragons,Western Carolina Catamounts,Western Carolina Catamounts NANA,NA,Western Carolina Catamounts -41.5,44,52.5,34.5,41.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,322.7111452909435,NA,2,3,2,TRUE
+NA,2026-11-11,401926202,North Carolina Central Eagles,VMI Keydets,VMI Keydets NANA,NA,VMI Keydets -5.5,12.5,8,0.5,5.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-63.49484579543355,NA,3,2,2,TRUE
+NA,2026-11-11,401925663,Oklahoma Panhandle PANHANDLE ST,Alabama State Hornets,Alabama State Hornets NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,1,0,0,TRUE
+NA,2026-11-11,401923311,Thomas College Terriers,New Hampshire Wildcats,New Hampshire Wildcats NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,3,0,0,TRUE
+NA,2026-11-11,401922282,Bob Jones Bruins,South Carolina Upstate Spartans,South Carolina Upstate Spartans NANA,NA,South Carolina Upstate Spartans -8,32,-0,-0,8,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-76.69041430823381,NA,2,1,1,TRUE
+NA,2026-11-11,401920946,Great Lakes Christian Crusaders,Eastern Michigan Eagles,Eastern Michigan Eagles NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,2,0,0,TRUE
+NA,2026-11-11,401926182,Lees McRae Bobcats,UNC Greensboro Spartans,UNC Greensboro Spartans NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,2,0,0,TRUE
+NA,2026-11-11,401926060,Bryant & Stratton-Albany Bobcats,Wagner Seahawks,Wagner Seahawks NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,2,0,0,TRUE
+NA,2026-11-11,401925895,Old Dominion Monarchs,Norfolk State Spartans,Norfolk State Spartans NANA,NA,Old Dominion Monarchs 0,-0.5,7,-3.5,-0,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-86.70221011991111,NA,3,3,3,TRUE
+NA,2026-11-11,401925682,South Carolina State Bulldogs,Notre Dame Fighting Irish,Notre Dame Fighting Irish NANA,NA,Notre Dame Fighting Irish -10,6.5,18,7.5,10,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-8.75473904249543,NA,2,2,2,TRUE
+NA,2026-11-11,401925011,Centenary (LA) Ladies,Lamar Cardinals,Lamar Cardinals NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,2,0,0,TRUE
+NA,2026-11-11,401924870,William Paterson Pioneers,Rider Broncs,Rider Broncs NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,3,0,0,TRUE
+NA,2026-11-11,401921286,Furman Paladins,Holy Cross Crusaders,Holy Cross Crusaders NANA,NA,Furman Paladins -29.5,-11,-15.5,-45.5,-29.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-353.50240136142384,NA,2,3,2,TRUE
+NA,2026-11-11,401921105,Franklin Grizzlies,Bellarmine Knights,Bellarmine Knights NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,3,0,0,TRUE
+NA,2026-11-11,401920914,Clarke Pride,Northern Illinois Huskies,Northern Illinois Huskies NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,3,0,0,TRUE
+NA,2026-11-11,401920202,NJIT Highlanders,VCU Rams,VCU Rams NANA,NA,VCU Rams -26.5,26,25.5,27.5,26.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,270.8421373216979,NA,2,3,2,TRUE
+NA,2026-11-11,401917901,UNC Asheville Bulldogs,West Georgia Wolves,West Georgia Wolves NANA,NA,UNC Asheville Bulldogs -6.5,-4.5,3.5,-12.5,-6.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-51.752828866528944,NA,2,3,2,TRUE
+NA,2026-11-11,401912209,American University Eagles,Drexel Dragons,Drexel Dragons NANA,NA,Drexel Dragons -3,7,-0.5,3,3,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,74.85626819595336,NA,2,2,2,TRUE
+NA,2026-11-11,401911012,UMass Lowell River Hawks,Massachusetts Minutemen,Massachusetts Minutemen NANA,NA,Massachusetts Minutemen -2.5,2.5,7.5,0,2.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-51.81115439730888,NA,2,3,2,TRUE
+NA,2026-11-11,401928801,Campbellsville Tigers,Western Kentucky Hilltoppers,Western Kentucky Hilltoppers NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,3,0,0,TRUE
+NA,2026-11-11,401919030,Friends Falcons,Wichita State Shockers,Wichita State Shockers NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,2,0,0,TRUE
+NA,2026-11-11,401911275,Binghamton Bearcats,Misericordia Cougars,Misericordia Cougars NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,0,3,0,TRUE
+NA,2026-11-11,401926067,Blackburn Beavers,Eastern Illinois Panthers,Eastern Illinois Panthers NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,2,0,0,TRUE
+NA,2026-11-11,401921037,Jackson State Tigers,Southern Miss Golden Eagles,Southern Miss Golden Eagles NANA,NA,Southern Miss Golden Eagles -30.5,16,36,35,30.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,132.02299860046583,NA,2,2,2,TRUE
+NA,2026-11-11,401920844,Macalester Scots,St. Thomas Tommies,St. Thomas Tommies NANA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,NA,NA,3,0,0,TRUE
+NA,2026-11-11,401911391,Erskine Flying Fleet,Gardner-Webb Runnin' Bulldogs,Gardner-Webb Runnin' Bulldogs NANA,NA,Gardner-Webb Runnin' Bulldogs -1.5,1,1,1.5,1.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-8.705882647181625,NA,2,2,2,TRUE
+NA,2026-11-11,401928814,Oakland Golden Grizzlies,Boise State Broncos,Boise State Broncos NANA,NA,Boise State Broncos -33,19.5,15.5,48.5,33,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,228.68089409349727,NA,2,3,2,TRUE
+NA,2026-11-11,401917963,Stephen F. Austin Lumberjacks,Abilene Christian Wildcats,Abilene Christian Wildcats NANA,NA,Stephen F. Austin Lumberjacks -30,-7.5,-12.5,-50,-30,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,-215.5666157827168,NA,2,2,2,TRUE
+NA,2026-11-11,401929625,Lincoln (CA) Oaklanders,UC Irvine Anteaters,UC Irvine Anteaters NANA,NA,UC Irvine Anteaters -43.5,43.5,12,59.5,43.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,297.4622187064401,NA,2,2,2,TRUE
+NA,2026-11-11,401925738,Mississippi Valley State Delta Devils,Oregon Ducks,Oregon Ducks NANA,NA,Oregon Ducks -31,25,13.5,42.5,31,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,342.91116345359023,NA,2,1,1,TRUE
+NA,2026-11-11,401919734,Chicago State Cougars,California Baptist Lancers,California Baptist Lancers NANA,NA,Chicago State Cougars -1.5,7.5,4.5,-9,-1.5,NA,NA,NA,NA,0,0,0,0,NA,NA,NA,0,NA,110.02122446800831,NA,2,2,2,TRUE
