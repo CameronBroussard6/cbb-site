@@ -1,4 +1,4 @@
 agreement_profile,picks,wins,losses,pushes,win_pct,avg_brain_score,avg_edge_pts,avg_agree_bonus,avg_all3_bonus,avg_hit_bonus,avg_disagree_pen
-No strong agreement,16,9,7,0,56.2,5.7,2.06,0.99,0,0,0.82
-All 3 agree,59,30,27,2,52.6,15.83,11.45,2.8,1.5,0.6,0
-2 of 3 agree,39,17,22,0,43.6,7.66,4.79,0.94,0,0.6,0.38
+All 3 agree,77,39,36,2,52,15.75,11.34,2.8,1.5,0.6,0
+No strong agreement,18,9,9,0,50,5.48,1.86,0.97,0,0,0.78
+2 of 3 agree,49,21,28,0,42.9,7.51,4.67,0.95,0,0.6,0.4
