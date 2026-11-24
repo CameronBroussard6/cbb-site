@@ -1,5 +1,5 @@
 model,avg_abs_error
-mae_04,11.8
-mae_blend,12.7
-mae_09,13.14
-mae_10,14.33
+mae_04,11.22
+mae_blend,12.1
+mae_09,12.61
+mae_10,13.76
