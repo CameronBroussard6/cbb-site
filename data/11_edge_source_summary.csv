@@ -1,9 +1,9 @@
 metric,value
-avg_edge_04,6.21
-avg_edge_09,8.57
-avg_edge_10,10.47
-avg_edge_blend,7.79
-avg_pred_04,8.39
-avg_pred_09,12.15
-avg_pred_10,13.66
-avg_pred_blend,11.16
+avg_edge_04,6.11
+avg_edge_09,8.53
+avg_edge_10,10.51
+avg_edge_blend,7.76
+avg_pred_04,8.44
+avg_pred_09,12.13
+avg_pred_10,13.72
+avg_pred_blend,11.22
